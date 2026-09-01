@@ -15,6 +15,7 @@ program, wired together with 1,522 links.
 <p align="center">
   <sub>
     252 notes · 1,125 links · not one word of explanation in any of them.<br>
+    A map of how the notes connect, not an embedding space.<br>
     Blue is the Systems ladder, amber the AI ladder, grey the scaffolding that holds them
     together. Drawn from the actual wikilinks by
     <a href="scripts/graph.py"><code>scripts/graph.py</code></a>.
@@ -23,6 +24,10 @@ program, wired together with 1,522 links.
 
 **Every note is empty.** That is the design, not an oversight. The picture above is the whole
 proposition in one image: the structure ships, and the content is your side of the deal.
+
+Nothing here is chunked, embedded, or waiting to be retrieved by a model. `02-ai/` teaches how
+retrieval works; it doesn't use it. The only retrieval this is built for is yours, months
+later, without the file open.
 
 ---
 
