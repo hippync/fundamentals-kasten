@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Read the contribution range first
+    url: https://github.com/hippync/fundamentals-kasten/blob/master/CONTRIBUTING.md
+    about: This repo takes a narrower range of contributions than most. Filled-in notes are declined on purpose.
+  - name: Why the notes ship empty
+    url: https://github.com/hippync/fundamentals-kasten/blob/master/00-meta/Methodology.md
+    about: The argument behind an empty kasten, and where it deviates from Ahrens.

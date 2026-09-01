@@ -1,0 +1,48 @@
+name: Build-to-learn exercise
+description: A better way to reach 'tested' on a rung. Concrete commands beat descriptions.
+title: "[build] "
+labels: ["build"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A build is what moves a concept from 🌳 `explained` to 🔥 `tested`. The bar is that
+        someone can follow it on a weekday evening and watch the failure happen.
+  - type: input
+    id: rung
+    attributes:
+      label: Which rung
+      placeholder: S05 — Distributed systems
+    validations:
+      required: true
+  - type: textarea
+    id: make
+    attributes:
+      label: The thing to make
+      description: Smallest version that still demonstrates the idea. Commands, not prose, wherever you can.
+    validations:
+      required: true
+  - type: textarea
+    id: failure
+    attributes:
+      label: The failure to cause on purpose
+      description: What you break, and what the system should do when you break it.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: How you'd know it worked
+      description: The observation that settles it — a log line, a latency graph, a dropped request, a hung process.
+    validations:
+      required: true
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Roughly how long
+      options:
+        - Under an hour
+        - An evening
+        - A weekend
+    validations:
+      required: true

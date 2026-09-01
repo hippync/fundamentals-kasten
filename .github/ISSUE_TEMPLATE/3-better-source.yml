@@ -1,0 +1,47 @@
+name: Better source
+description: A note points at a weaker source than it could. Bring a chapter number.
+title: "[source] "
+labels: ["source"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Free and primary sources are strongly preferred — see the source hierarchy in
+        `00-meta/principles/`. A pointer without a chapter is not a pointer.
+  - type: input
+    id: target
+    attributes:
+      label: Which note or rung
+      placeholder: 01-systems/s03-networking/TLS handshake.md
+    validations:
+      required: true
+  - type: input
+    id: current
+    attributes:
+      label: What it points at now
+    validations:
+      required: true
+  - type: input
+    id: proposed
+    attributes:
+      label: What it should point at, with chapter or section
+      placeholder: High Performance Browser Networking, ch. 4 — Transport Layer Security
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it's better
+      description: Primary over secondary, free over paid, specific over general — say which applies.
+    validations:
+      required: true
+  - type: dropdown
+    id: access
+    attributes:
+      label: Is the proposed source free to read?
+      options:
+        - Free and online
+        - Free with a library card
+        - Paid
+    validations:
+      required: true

@@ -1,0 +1,44 @@
+name: Scaffolding error
+description: A concept on the wrong rung, a broken wikilink, a Related list that doesn't hold up, or frontmatter that doesn't match the note contract.
+title: "[scaffolding] "
+labels: ["scaffolding"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        These are real bugs and they are wanted. If you are not sure whether something is a bug
+        or the design, say so below — asking is cheaper for both of us than a PR that has to be
+        closed.
+  - type: input
+    id: note
+    attributes:
+      label: Which note
+      description: Path or title. More than one is fine if they share the same problem.
+      placeholder: 01-systems/s04-data-and-storage/Query plans.md
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of error
+      options:
+        - Filed on the wrong rung
+        - Broken or unresolved wikilink
+        - Related links point somewhere that doesn't make sense
+        - Frontmatter doesn't match the note contract
+        - Duplicate or overlapping concept
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: detail
+    attributes:
+      label: What's wrong
+      description: What you expected, and what you found instead.
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: What it should be
+      description: Optional, but it usually turns a discussion into a one-line change.

@@ -1,0 +1,49 @@
+name: Missing concept or thin rung
+description: Something a ladder should cover and doesn't. Propose the stub, not the written note.
+title: "[concept] "
+labels: ["concept"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Propose the **stub**: the title, the rung, the failure it explains, and where to read
+        about it. Do not write the explanation — that is the reader's job, and a filled-in note
+        would be declined.
+  - type: input
+    id: title
+    attributes:
+      label: Concept title
+      description: One idea. If it needs an "and", it is probably two notes.
+      placeholder: Write amplification
+    validations:
+      required: true
+  - type: input
+    id: rung
+    attributes:
+      label: Which rung
+      description: S01–S10 on the Systems ladder, A1–A9 on the AI ladder.
+      placeholder: S04 — Data and storage
+    validations:
+      required: true
+  - type: textarea
+    id: failure
+    attributes:
+      label: Predict the failure
+      description: What breaks in production when this is absent, wrong, or misunderstood? One sentence. This is the test a concept has to pass to earn a note here.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source, with a chapter
+      description: "\"Read DDIA\" is not actionable. \"DDIA ch. 3, Storage and Retrieval\" is."
+      placeholder: DDIA ch. 3, Storage and Retrieval
+    validations:
+      required: true
+  - type: checkboxes
+    id: acknowledgement
+    attributes:
+      label: Before you submit
+      options:
+        - label: I am proposing a stub, not submitting a written explanation.
+          required: true
