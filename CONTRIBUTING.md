@@ -49,6 +49,10 @@ working with zero plugins and zero scripts.
 - Keep the eight-H2 concept skeleton intact, in order. An empty section is honest signal; a
   missing one breaks the chunking guarantees in the note contract.
 - No plugin dependencies. Dataview queries stay commented out.
+- Don't regenerate the graph. `docs/graph-*.svg` are built from your links by
+  `scripts/graph.py`, and two people regenerating independently produce two unmergeable
+  1,300-line diffs of shifted coordinates. Change the notes and leave the SVGs alone; the
+  graph is redrawn on `master` once your PR lands.
 
 ## Issues are cheap
 
