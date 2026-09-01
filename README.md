@@ -1,10 +1,28 @@
 # Fundamentals Kasten
 
-A blank Zettelkasten for software engineering fundamentals — 130 atomic concepts across a
-Systems ladder and an AI ladder, 19 build-to-learn exercises, 38 tier-ranked sources and a
-28-week program, wired together with 1,500 links.
+A blank Zettelkasten for software engineering fundamentals — 130 atomic concepts across a Systems
+ladder and an AI ladder, 19 build-to-learn exercises, 38 tier-ranked sources and a 28-week
+program, wired together with 1,522 links.
 
-**Every note is empty.** That is the design, not an oversight.
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/graph-dark.svg">
+    <img src="docs/graph-light.svg" width="900"
+         alt="The link graph of this repository: 252 notes and 1,125 connections, a dense hub of indexes at the centre, the Systems and AI ladders wrapped around it, and the source library trailing off to one side.">
+  </picture>
+</p>
+
+<p align="center">
+  <sub>
+    252 notes · 1,125 links · not one word of explanation in any of them.<br>
+    Blue is the Systems ladder, amber the AI ladder, grey the scaffolding that holds them
+    together. Drawn from the actual wikilinks by
+    <a href="scripts/graph.py"><code>scripts/graph.py</code></a>.
+  </sub>
+</p>
+
+**Every note is empty.** That is the design, not an oversight. The picture above is the whole
+proposition in one image: the structure ships, and the content is your side of the deal.
 
 ---
 
@@ -88,7 +106,9 @@ recite is worth very little. A failure you can anticipate is worth a great deal.
 08-decisions/       ADR-0001 is blank, and writing it is your first task
 capstone/           the exam
 _templates/         note templates
+docs/               the graph above
 scripts/            reset.py — restore every note to stub
+                    graph.py — redraw the graph from your own links
 ```
 
 Start at [MOC.md](MOC.md) — the map of contents — or at
@@ -112,9 +132,31 @@ Everything in this repo ships at 🌱. `explained` is the minimum for calling so
 Do not aim for a full repo of 🌳. That is collecting, and collecting is the trap this is
 built to avoid. Aim for every concept in your current block at 🌳 and that block's build at 🔥.
 
+## Watching it fill in
+
+The graph at the top is generated rather than screenshotted, so it is worth rerunning as you
+work:
+
+```bash
+python scripts/graph.py
+```
+
+That redraws `docs/graph-light.svg` and `docs/graph-dark.svg` from whatever your notes
+currently link to. `python scripts/graph.py --stats` prints the same numbers without drawing
+anything. Standard library only, no install step, and the layout is seeded, so the same vault
+always produces the same picture and a diff means the links really changed.
+
+Two readings are worth having:
+
+- **Orphans.** A note nothing links to is a note you filed and never used. `--stats` counts
+  them. A rising orphan count is the earliest sign that you have gone back to collecting.
+- **Where the hubs are.** In a fresh copy the biggest nodes are the generated indexes, because
+  indexes are all there is. In a kasten you have actually worked in, concepts start to outrank
+  them — that is what a retrieval map looks like once it is yours rather than the generator's.
+
 ## Obsidian is recommended, not required
 
-The notes are plain markdown with YAML frontmatter and `\[\[wikilinks\]\]`. Nothing here needs a
+The notes are plain markdown with YAML frontmatter and `[[wikilinks]]`. Nothing here needs a
 plugin — the Dataview queries in the status board are commented out, and the repo works with
 them switched off forever.
 
@@ -123,9 +165,9 @@ resolve, backlinks and graph view work, and the structure is browsable the way i
 Turn on *Settings → Files & Links → Automatically update internal links* before you rename
 anything.
 
-**On GitHub or in any other editor:** the notes are readable, but `\[\[wikilinks\]\]` render as
+**On GitHub or in any other editor:** the notes are readable, but `[[wikilinks]]` render as
 literal text rather than links, and `> [!question]` callouts render as plain blockquotes. This
-is a deliberate trade — 1,500 wikilinks are worth more inside the tool you will actually study
+is a deliberate trade — 1,522 wikilinks are worth more inside the tool you will actually study
 in than they are in a browser tab. `README.md` and `MOC.md` use ordinary relative links so
 navigation works from the web.
 
@@ -146,6 +188,7 @@ Then:
    page, and doing it first stops you from spending week three comparing languages instead of
    learning one.
 4. Open `07-program/Block 01-02 — The machine.md` and start.
+5. Run `python scripts/graph.py` whenever you want to see what you have actually built.
 
 If you drift from the structure, that is a good sign rather than a bad one. `scripts/reset.py`
 exists if you want to hand a clean copy to someone else.
