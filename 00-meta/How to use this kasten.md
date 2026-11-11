@@ -39,12 +39,12 @@ A note cannot advance past `status: drafted` until that section is written with 
 
 ## The weekly loop
 
-1. **Pick the block.** Open the current note in `06 Blocks`. Two systems concepts, one AI concept.
+1. **Pick the block.** Open the current note in `07-program`. Two systems concepts, one AI concept.
 2. **Read one source.** Tier 1 or tier 2 only — see [[The source hierarchy]].
-3. **Build the thing.** The block's deliverable, from `05 Builds`. Reading produces recognition; building produces knowledge.
+3. **Build the thing.** The block's deliverable, from `06-builds`. Reading produces recognition; building produces knowledge.
 4. **Break it on purpose.** Fill in *Predict the failure* and then verify the prediction.
 5. **Write it in your own words.** Close the book first.
-6. **Write the ADR.** One page: context, options, decision, consequences. Goes in `07 Decisions`.
+6. **Write the ADR.** One page: context, options, decision, consequences. Goes in `08-decisions`.
 
 ## Using AI against this vault
 
@@ -54,7 +54,7 @@ The vault is also structured to be pointed at directly as a RAG corpus for your 
 
 ## Templates
 
-Copy these by hand, or point Obsidian's core Templates plugin at `00 Meta/Templates`.
+Copy these by hand, or point Obsidian's core Templates plugin at `_templates`.
 
 - [[Template — Concept]] · [[Template — Source]] · [[Template — Build]] · [[Template — ADR]] · [[Template — Weekly review]]
 

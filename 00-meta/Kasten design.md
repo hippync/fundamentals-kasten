@@ -20,7 +20,7 @@ So the vault is not a copy of the document. It's the document decomposed into th
 
 ## The four decompositions
 
-**Principles became rules, not notes.** The fifteen items in `01 Principles` are the only notes that arrive finished. They aren't things to learn; they're the constitution the rest of the vault runs under. When you're unsure whether to spend an evening on something, that folder answers it.
+**Principles became rules, not notes.** The fifteen items in `00-meta/principles` are the only notes that arrive finished. They aren't things to learn; they're the constitution the rest of the vault runs under. When you're unsure whether to spend an evening on something, that folder answers it.
 
 **Themes became maps of contents, not content.** A theme note holds no explanation. It holds: why this rung matters now, which concepts hang off it, the manual's verbatim questions as a checklist, the build, and the sources. It's a hub — deliberately thin, so the graph view shows structure rather than mush.
 
