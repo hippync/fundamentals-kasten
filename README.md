@@ -126,9 +126,11 @@ The full argument, including where this deliberately departs from Ahrens, is in 
 08-decisions/           ADR-0001 is blank, and writing it is your first task
 capstone/               the exam
 _templates/             note templates
-docs/                   the graph above
+docs/                   the graph above · adr/ records this repo's own design decisions
 scripts/                graph.py redraws the graph · reset.py restores every note to stub
 ```
+
+Decisions about the repo itself, rather than your learning, are recorded in [`docs/adr/`](docs/adr/). The first is [ADR 0001: Breakpoint](docs/adr/0001-breakpoint.md), an optional Claude Code layer that examines you instead of writing for you.
 
 Start at the **[Map of contents](MOC.md)**. The notes themselves use `[[wikilinks]]`, so they read best in Obsidian. On GitHub, wikilinks and `> [!question]` callouts render as plain text; `README.md` and `MOC.md` use ordinary relative links so you can still find your way around from the web.
 
