@@ -14,7 +14,7 @@ updated: ""
 
 Senior work is mostly writing. Writing forces the thinking to be complete — you find the hole in the design in paragraph three, not in production. And when generation is cheap, the precise specification *is* the work.
 
-One ADR per block, minimum. Copy the template from `00 Meta/Templates`.
+One ADR per block, minimum. Copy the template from `_templates`.
 
 | # | Date | Decision | Status |
 |---|---|---|---|
