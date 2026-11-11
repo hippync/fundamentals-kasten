@@ -26,7 +26,7 @@ So the kasten is not a copy of the document. It's the document decomposed into t
 
 **Questions became the assessment layer.** The manual's "answer these" lists are the only objective measure it provides. They live in two places on purpose: on the theme note (as a per-rung checklist you tick when you can answer out loud) and inside the concept note they belong to (so the question is next to the material). Duplication is intentional — one is a drill, the other is context.
 
-**Concepts became the atom.** 130 of them, one idea each, every one with the same eight headings. That uniformity is what makes the kasten machine-readable later.
+**Concepts became the atom.** 130 of them, one idea each, every one with the same *Predict the failure* callout and seven headings. That uniformity is what makes the kasten machine-readable later.
 
 ## What was deliberately left out
 

@@ -31,16 +31,17 @@ updated:     ISO date
 
 ## Heading contract
 
-Every concept note uses the same H2 set, in the same order:
+Every concept note opens with a `> [!question] Predict the failure` callout directly under the H1 — the test from Part 0. Not "can I use it" but "can I predict its failure mode."
 
-1. `## Predict the failure` — the test from Part 0. Not "can I use it" but "can I predict its failure mode."
-2. `## What it is`
-3. `## Why it matters now`
-4. `## How it breaks`
-5. `## Questions I should be able to answer`
-6. `## In my own words` — **the only section that counts**
-7. `## Where I'd look`
-8. `## Related`
+Then the same H2 set, in the same order:
+
+1. `## What it is`
+2. `## Why it matters now`
+3. `## How it breaks`
+4. `## Questions I should be able to answer`
+5. `## In my own words` — **the only section that counts**
+6. `## Where I'd look`
+7. `## Related`
 
 Do not rename, reorder, or drop headings. Add content under them.
 
