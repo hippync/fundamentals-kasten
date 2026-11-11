@@ -12,3 +12,12 @@ desktop.ini
 # Python
 __pycache__/
 *.pyc
+
+# Breakpoint: session history stays on your machine. Keep the folder
+# structure, the README and the templates; ignore everything a session writes.
+# Private fork? Delete these lines to keep your session history in git.
+_tutor/**
+!_tutor/**/
+!_tutor/README.md
+!_tutor/**/.gitkeep
+!_tutor/templates/**

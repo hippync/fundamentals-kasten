@@ -50,7 +50,7 @@ def main():
     changed = 0
     for r in roots:
         for dirpath, dirnames, filenames in os.walk(r):
-            dirnames[:] = [d for d in dirnames if d not in (".git", ".obsidian", "_templates")]
+            dirnames[:] = [d for d in dirnames if d not in (".git", ".obsidian", "_templates", "_tutor")]
             for fn in sorted(filenames):
                 if not fn.endswith(".md"):
                     continue

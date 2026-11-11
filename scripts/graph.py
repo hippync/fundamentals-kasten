@@ -15,7 +15,7 @@ import argparse, math, os, random, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs")
-SKIP_DIRS = {".git", ".obsidian", ".trash", "_templates", "scripts", "docs"}
+SKIP_DIRS = {".git", ".obsidian", ".trash", "_templates", "_tutor", "scripts", "docs"}
 # Root navigation uses ordinary relative links, not wikilinks, so it has no edges.
 SKIP_FILES = {"README.md", "CONTRIBUTING.md", "MOC.md"}
 
