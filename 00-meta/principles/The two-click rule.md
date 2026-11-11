@@ -16,7 +16,7 @@ updated: ""
 
 If a technical claim can't be traced to tier 1 or tier 2 within two clicks, it doesn't enter your head as fact. It's a rumour until sourced.
 
-**In this vault:** anything in a note that you can't trace gets tagged `#unsourced`. That tag is a to-do list, not a decoration.
+**In this kasten:** anything in a note that you can't trace gets tagged `#unsourced`. That tag is a to-do list, not a decoration.
 
 ## Related
 

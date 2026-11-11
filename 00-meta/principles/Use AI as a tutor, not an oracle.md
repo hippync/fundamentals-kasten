@@ -24,7 +24,7 @@ This is the meta-skill. Instead of "write me X," ask:
 
 You have, effectively, unlimited access to a patient senior engineer. Most people use it as a code vending machine. That's the whole difference.
 
-**Vault workflow:** paste a concept note's *In my own words* section and ask for the holes. Don't ask it to write that section.
+**Kasten workflow:** paste a concept note's *In my own words* section and ask for the holes. Don't ask it to write that section.
 
 ## Related
 

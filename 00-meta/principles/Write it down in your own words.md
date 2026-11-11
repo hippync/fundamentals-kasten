@@ -17,7 +17,7 @@ updated: ""
 
 If you can't explain it in a paragraph without the source open, you don't have it yet. Notes you write are worth ten times notes you copy.
 
-**This is the load-bearing rule of this entire vault.** Every concept note ships with the scaffolding filled in and the *In my own words* section empty. The scaffolding is not knowledge. Only that section is.
+**This is the load-bearing rule of this entire kasten.** Every concept note ships with the scaffolding filled in and the *In my own words* section empty. The scaffolding is not knowledge. Only that section is.
 
 A note's `status` cannot advance past `drafted` until that section is written from a closed book.
 
