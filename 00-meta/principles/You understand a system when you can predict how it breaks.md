@@ -14,7 +14,7 @@ updated: ""
 
 *Principle · Part 0 · The Fundamentals Reset (Field Manual, Edition 2026)*
 
-The third principle, and the test for every theme in this vault. Not "can I use it" but **"can I predict its failure mode."**
+The third principle, and the test for every theme in this kasten. Not "can I use it" but **"can I predict its failure mode."**
 
 Every concept note has a *Predict the failure* line. If you can't fill it in, the concept is not yet yours — regardless of how many times you've used the thing.
 

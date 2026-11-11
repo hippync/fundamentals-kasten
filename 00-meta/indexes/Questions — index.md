@@ -13,7 +13,7 @@ updated: ""
 
 Every "answer these" question in the manual, in one place. This is the recall drill.
 
-**How to use it:** pick a theme, close the vault, answer out loud. Anything you fumble, open the concept note and move its status back. The manual's rule — *if you can't explain it in a paragraph without the source open, you don't have it yet* — applies here first.
+**How to use it:** pick a theme, close the kasten, answer out loud. Anything you fumble, open the concept note and move its status back. The manual's rule — *if you can't explain it in a paragraph without the source open, you don't have it yet* — applies here first.
 
 For a real drill, hand this list to a model and say *"quiz me on these, one at a time, don't give me the answers."*
 

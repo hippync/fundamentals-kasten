@@ -11,7 +11,7 @@ updated: ""
 
 # Note contract
 
-The rules every note in this vault follows. They exist so the vault is navigable by a human **and** chunkable by a retrieval pipeline without a custom parser.
+The rules every note in this kasten follows. They exist so the kasten is navigable by a human **and** chunkable by a retrieval pipeline without a custom parser.
 
 ## Frontmatter schema
 
@@ -61,7 +61,7 @@ Themes are frontmatter, not tags. Tags describe cross-cutting properties only:
 
 `#concept` `#principle` `#source` `#build` `#decision` — note type
 `#unsourced` — a claim you couldn't trace within two clicks ([[The two-click rule]])
-`#contradicts-manual` — you found evidence the manual is wrong. Keep it. That's the most valuable note in the vault.
+`#contradicts-manual` — you found evidence the manual is wrong. Keep it. That's the most valuable note in the kasten.
 `#reread` — you thought you understood it and later found you didn't
 
 ## Filenames

@@ -10,7 +10,7 @@ updated: ""
 
 # Principles — index
 
-The fifteen operating principles, in document order. These are not notes to complete — they're the rules the rest of the vault runs on.
+The fifteen operating principles, in document order. These are not notes to complete — they're the rules the rest of the kasten runs on.
 
 - **Part 0** — [[Invest by half-life]]
 - **Part 0** — [[Build a retrieval map, not a memory]]

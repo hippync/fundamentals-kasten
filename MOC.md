@@ -1,6 +1,6 @@
 ---
 id: "moc"
-title: "MOC — map of contents"
+title: "MOC"
 type: "index"
 tags:
   - "index"

@@ -1,6 +1,6 @@
 ---
 id: "how-to-use"
-title: "How to use this vault"
+title: "How to use this kasten"
 type: "meta"
 tags:
   - "meta"
@@ -8,7 +8,7 @@ source-doc: "The Fundamentals Reset (Field Manual, Edition 2026)"
 updated: ""
 ---
 
-# How to use this vault
+# How to use this kasten
 
 ## What this is
 
@@ -20,7 +20,7 @@ Every concept note is a pin on that map. The scaffolding — what the thing is, 
 
 ## The one rule
 
-Every concept note has an empty section called **In my own words**. That section is the only part of this vault that has any value, and only you can write it.
+Every concept note has an empty section called **In my own words**. That section is the only part of this kasten that has any value, and only you can write it.
 
 > If you can't explain it in a paragraph without the source open, you don't have it yet. Notes you write are worth ten times notes you copy.
 
@@ -46,11 +46,11 @@ A note cannot advance past `status: drafted` until that section is written with 
 5. **Write it in your own words.** Close the book first.
 6. **Write the ADR.** One page: context, options, decision, consequences. Goes in `08-decisions`.
 
-## Using AI against this vault
+## Using AI against this kasten
 
 Use it as a tutor, not an oracle. Paste a note's *In my own words* section and ask *"where is this wrong?"* — do not ask it to write that section. See [[Use AI as a tutor, not an oracle]].
 
-The vault is also structured to be pointed at directly as a RAG corpus for your own study tooling — see [[Note contract]] for the chunking guarantees.
+The kasten is also structured to be pointed at directly as a RAG corpus for your own study tooling — see [[Note contract]] for the chunking guarantees.
 
 ## Templates
 
@@ -60,10 +60,10 @@ Copy these by hand, or point Obsidian's core Templates plugin at `_templates`.
 
 ## Optional plugins
 
-The vault is plain markdown and works with zero plugins. If you want more:
+The kasten is plain markdown and works with zero plugins. If you want more:
 
 - **Dataview** — the queries in [[Status board]] are already written, commented out. Uncomment them.
 - **Spaced Repetition** — [[Questions — index]] is formatted so questions can be turned into cards.
 - **Graph view** (core) — filter by tag to see one theme's cluster at a time.
 
-Do not install anything until the vault has annoyed you in a specific way. Tools are the top row of the half-life table.
+Do not install anything until the kasten has annoyed you in a specific way. Tools are the top row of the half-life table.

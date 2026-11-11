@@ -16,7 +16,7 @@ updated: ""
 
 Read this whenever you feel the itch to switch, or feel behind because of a hype cycle.
 
-Every theme in this vault is language-independent. Cache locality, isolation levels, idempotency, coupling, backpressure — none of them care what syntax you type. A developer who understands them in one language can pick up the next language in weeks. A developer who knows five languages and none of the concepts is stuck forever, because there's no sixth language that fixes it.
+Every theme in this kasten is language-independent. Cache locality, isolation levels, idempotency, coupling, backpressure — none of them care what syntax you type. A developer who understands them in one language can pick up the next language in weeks. A developer who knows five languages and none of the concepts is stuck forever, because there's no sixth language that fixes it.
 
 **AI made syntax the cheapest thing to acquire.** Translating a known solution into unfamiliar syntax used to be a real barrier and a real skill. It isn't anymore. What's left is knowing *which* solution — and that's concept, not language.
 

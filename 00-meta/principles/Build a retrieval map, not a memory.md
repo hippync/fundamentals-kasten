@@ -20,7 +20,7 @@ You don't need to hold B-tree internals in your head. You need to (a) know that 
 
 Fundamentals aren't a memory game — they're a map of where the important problems live.
 
-**This vault is that map.** Every concept note is a pin on it. The pin needs: what the thing is, what it explains, and where you'd look. It does not need to be complete.
+**This kasten is that map.** Every concept note is a pin on it. The pin needs: what the thing is, what it explains, and where you'd look. It does not need to be complete.
 
 ## Related
 
