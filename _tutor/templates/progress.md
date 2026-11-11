@@ -1,5 +1,5 @@
 ---
-block: "Block 01-02 — The machine"   # the 07-program note you're working through
+block: "blk-01-02"                   # id of the 07-program block you're working through
 program-start: ""                    # YYYY-MM-DD, the day you started block 01-02
 primary-language: ""                 # the language you chose in 08-decisions/ADR-0001
 session-language: "English"          # the language Breakpoint talks to you in
