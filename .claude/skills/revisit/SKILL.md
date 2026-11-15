@@ -11,7 +11,7 @@ Write every question by the rules in [../probe/questions.md](../probe/questions.
 
 ## Steps
 
-1. **Pick.** Run `python3 .claude/tutor/tutor.py due --limit 10`. These items, in this order, are the session; nothing else gets probed. If none are due, say so, offer `/next`, and stop after the log. Run `date +%H:%M` and note the start: the session ends at 15 minutes even if items remain.
+1. **Pick.** Run `python3 .claude/tutor/tutor.py due --limit 10`. These items, in this order, are the session; nothing else gets probed. If none are due, say so, offer `/next`, and stop after the log. Run `python3 .claude/tutor/tutor.py letters revisit --count 20` for the correct letter of each question, numbered across the whole session. Run `date +%H:%M` and note the start: the session ends at 15 minutes even if items remain.
 2. **Probe each item cold.** For each concept, show only its title. Don't quote the note or the learner's *In my own words* before they answer. Read the note yourself to write the questions:
    - one `consequence` question, then one `failure` question.
    - Both correct: `pass`. One correct: `partial`. Neither: `fail`. E on the first and nothing after: `dont-know`.

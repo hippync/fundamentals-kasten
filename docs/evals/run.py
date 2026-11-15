@@ -18,6 +18,8 @@ import shutil, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
+sys.path.insert(0, os.path.join(ROOT, ".claude", "tutor"))
+import tutor  # noqa: E402
 SKIP = {".git", ".obsidian", ".trash", "__pycache__", "runs"}
 SCAFFOLD = ("> *What breaks when this is absent, wrong, or misunderstood? One sentence, "
             "written by you. Until this line exists, the concept is not yours.*")
@@ -48,9 +50,12 @@ def claude(prompt, cwd, model=None, tools=None, timeout=900):
         data = json.loads(out.stdout)
     except json.JSONDecodeError:
         return {"text": "", "error": (out.stderr or out.stdout)[-2000:], "model": None, "cost": 0}
-    models = list((data.get("modelUsage") or {}).keys())
+    # Claude Code spends a little on a helper model (Haiku) when tools are on; the
+    # model under test is the one that did most of the spending, not the first key.
+    usage = data.get("modelUsage") or {}
+    main = max(usage, key=lambda m: usage[m].get("costUSD") or 0) if usage else None
     return {"text": data.get("result", ""), "error": data.get("is_error") and data.get("result"),
-            "model": models[0] if models else None, "cost": data.get("total_cost_usd") or 0}
+            "model": main, "cost": data.get("total_cost_usd") or 0}
 
 
 def json_from(text):
@@ -153,7 +158,8 @@ def score_critique(rows):
 
 # ---------------------------------------------------------------- quiz
 
-QUIZ_PROMPT = """Write one probe question for the concept {concept} at level `{level}`, exactly as /probe would.
+QUIZ_KEY = "eval"
+QUIZ_PROMPT = """Write one probe question for the concept {concept} at level `{level}`, exactly as /probe would. It is question Q{n} of a session whose letters key is `{key}`.
 
 Follow .claude/skills/probe/questions.md to the letter. Read the concept note (`python3 .claude/tutor/tutor.py concept {concept}` gives its path) and its sources first. Output only the question block in the Shape from questions.md, then one last line `ANSWER: <letter>`. Nothing else."""
 
@@ -189,10 +195,11 @@ def lint_quiz(block):
     return problems
 
 
-def run_quiz(item, model, judge_model):
+def run_quiz(item, n, expected, model, judge_model):
     tmp, root = kasten_copy()
     try:
-        out = claude(QUIZ_PROMPT.format(concept=item["concept"], level=item["level"]), root, model, READ_ONLY)
+        prompt = QUIZ_PROMPT.format(concept=item["concept"], level=item["level"], n=n, key=QUIZ_KEY)
+        out = claude(prompt, root, model, READ_ONLY)
         m = re.search(r"(?m)^ANSWER:\s*([A-D])\s*$", out["text"])
         block = out["text"][:m.start()].strip() if m else out["text"].strip()
         verdict = claude(JUDGE_QUIZ.format(question=block), tmp, judge_model)
@@ -200,7 +207,7 @@ def run_quiz(item, model, judge_model):
         answer = m.group(1) if m else None
         return {"id": item["id"], "concept": item["concept"], "level": item["level"],
                 "model": out["model"], "judge_model": verdict["model"], "error": out["error"],
-                "question": block, "answer": answer, "lint": lint_quiz(block),
+                "question": block, "answer": answer, "expected": expected, "lint": lint_quiz(block),
                 "standout": judged.get("standout"), "cues": judged.get("cues", []),
                 "leaks": bool(answer) and judged.get("standout") == answer,
                 "cost": out["cost"] + verdict["cost"]}
@@ -213,14 +220,17 @@ def score_quiz(rows):
     s = {"lint_clean": (sum(1 for r in rows if not r["lint"]), len(rows)),
          "leaks": (sum(r["leaks"] for r in rows), len(rows)),
          "letters": {k: letters.count(k) for k in "ABCD"},
+         "misplaced": (sum(1 for r in rows if r["answer"] and r["answer"] != r.get("expected")), len(rows)),
          "errors": sum(1 for r in rows if r["error"] or not r["answer"])}
-    s["pass"] = s["lint_clean"][0] == len(rows) and s["leaks"][0] <= 2 and not s["errors"]
+    s["spread"] = len(rows) < 4 or all(s["letters"].values())
+    s["pass"] = (s["lint_clean"][0] == len(rows) and s["leaks"][0] <= 2 and s["spread"]
+                 and not s["misplaced"][0] and not s["errors"])
     return s
 
 
 # ---------------------------------------------------------------- report
 
-def report(date, model, critique, quiz, cost):
+def report(date, model, critique, quiz, cost, run):
     lines = [f"## {date} · {model}", ""]
     if critique:
         c = critique
@@ -238,14 +248,23 @@ def report(date, model, critique, quiz, cost):
                   "| Measure | Result | Bar |", "|---|---|---|",
                   f"| Lint clean (shape, lengths, formatting) | {q['lint_clean'][0]}/{q['lint_clean'][1]} | all |",
                   f"| Answer stands out by form alone | {q['leaks'][0]}/{q['leaks'][1]} | ≤ 2 |",
-                  f"| Correct letters | " + " ".join(f"{k}:{v}" for k, v in q["letters"].items()) + " | spread |",
+                  f"| Correct letters | " + " ".join(f"{k}:{v}" for k, v in q["letters"].items()) + " | each of A–D used |",
+                  f"| Answer not at the letter tutor.py gave | {q['misplaced'][0]}/{q['misplaced'][1]} | 0 |",
                   f"| Run errors | {q['errors']} | 0 |", ""]
-    lines += [f"Cost: ${cost:.2f}. Raw output: [`runs/{date}-{slug(model)}/`](runs/{date}-{slug(model)}/).", ""]
+    lines += [f"Cost: ${cost:.2f}. Raw output: [`runs/{run}/`](runs/{run}/).", ""]
     return "\n".join(lines)
 
 
 def slug(s):
     return re.sub(r"[^a-z0-9.-]+", "-", (s or "default").lower()).strip("-")
+
+
+def run_name(date, model):
+    """runs/<date>-<model>/, with -2, -3… for a second run that day, so it never overwrites the first."""
+    base, n = f"{date}-{slug(model)}", 1
+    while os.path.exists(os.path.join(HERE, "runs", base + (f"-{n}" if n > 1 else ""))):
+        n += 1
+    return base + (f"-{n}" if n > 1 else "")
 
 
 def main():
@@ -268,7 +287,10 @@ def main():
             jobs += [("critique", pool.submit(run_critique, c, critique_cases["predict"], args.model, args.judge_model))
                      for c in pick(critique_cases["cases"])]
         if args.suite in ("all", "quiz"):
-            jobs += [("quiz", pool.submit(run_quiz, q, args.model, args.judge_model)) for q in pick(quiz_items)]
+            # Item i is Q(i+1) of one session, numbered over the whole list so --only keeps each letter.
+            expected = tutor.answer_letters(QUIZ_KEY, datetime.date.today(), len(quiz_items))
+            jobs += [("quiz", pool.submit(run_quiz, q, i + 1, expected[i], args.model, args.judge_model))
+                     for i, q in enumerate(quiz_items) if q in pick(quiz_items)]
         rows = {"critique": [], "quiz": []}
         for i, (suite, job) in enumerate(jobs, 1):
             row = job.result()
@@ -281,11 +303,12 @@ def main():
     critique = score_critique(rows["critique"]) if rows["critique"] else None
     quiz = score_quiz(rows["quiz"]) if rows["quiz"] else None
     cost = sum(r["cost"] for rs in rows.values() for r in rs)
-    summary = report(date, model, critique, quiz, cost)
+    run = run_name(date, model)
+    summary = report(date, model, critique, quiz, cost, run)
     print("\n" + summary)
     if args.no_write:
         return 0
-    out = os.path.join(HERE, "runs", f"{date}-{slug(model)}")
+    out = os.path.join(HERE, "runs", run)
     os.makedirs(out, exist_ok=True)
     for suite, rs in rows.items():
         if rs:

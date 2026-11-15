@@ -13,10 +13,10 @@ The build *A 30-case eval set*, applied to Breakpoint itself. A skill is a promp
 | | 5 correct paragraphs | ≤ 1 false alarm |
 | | 5 failure lines that are only definitions | flagged (reported, no bar) |
 | | all 30 | **zero** rewritten paragraphs, and the note unchanged |
-| `/probe` | 10 generated quiz items | all pass the lint; the answer stands out by form in ≤ 2 |
+| `/probe` | 10 generated quiz items | all pass the lint; the answer stands out by form in ≤ 2; every answer at the letter `tutor.py letters` gave, and A–D each used |
 
 - **Seeded holes** are one each: a wrong claim (errors "average out"), a wrong number (0.95¹⁰ ≈ 0.90), a missing piece (indirect injection), a reversed direction (verbosity bias). Each case records its hole for the judge in `cases/critique.json`.
-- **Quiz items** answer the question "can you spot the answer without knowing the material?". The lint checks the shape from [`questions.md`](../../.claude/skills/probe/questions.md) mechanically: options A–E with *E. I don't know*, option lengths within 1.5×, formatting in all options or none, no "all of the above". A judge then looks at form only (length, specificity, hedging, grammar, echoing the stem) and names any option that stands out. A standout that is the correct answer is a leak.
+- **Quiz items** answer the question "can you spot the answer without knowing the material?". The lint checks the shape from [`questions.md`](../../.claude/skills/probe/questions.md) mechanically: options A–E with *E. I don't know*, option lengths within 1.5×, formatting in all options or none, no "all of the above". A judge then looks at form only (length, specificity, hedging, grammar, echoing the stem) and names any option that stands out. A standout that is the correct answer is a leak. The ten items are Q1–Q10 of one session keyed `eval`, so each gets its correct letter from `tutor.py letters eval`, as `/probe` would; an answer at any other letter counts as misplaced.
 
 ## Running it
 

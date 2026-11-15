@@ -12,7 +12,7 @@ Write every question by the rules in [questions.md](questions.md).
 
 ## Steps
 
-1. **Load.** Run `python3 .claude/tutor/tutor.py concept "<argument>"`. It gives the id, status, ledger entry, prerequisites (the concepts in the note's *Related*, in order) and the note's questions. Read the note and its *Where I'd look* sources yourself, so your questions and corrections are grounded in them. If the learner hasn't named a concept, ask which one.
+1. **Load.** Run `python3 .claude/tutor/tutor.py concept "<argument>"`. It gives the id, status, ledger entry, prerequisites (the concepts in the note's *Related*, in order) and the note's questions. Read the note and its *Where I'd look* sources yourself, so your questions and corrections are grounded in them. Then run `python3 .claude/tutor/tutor.py letters <id>`: it gives the correct letter for every question of this session, prerequisites included, numbered in the order you ask them. If the learner hasn't named a concept, ask which one.
 2. **Close the book.** Ask the learner to close the note and any sources. Tell them: one question at a time, answer with a letter, E is always "I don't know".
 3. **Prerequisites.** For each prerequisite, up to three: one `mechanism` question. Correct: move on. Wrong or E: one easier follow-up to locate the gap, then move on. A gap here is a finding in itself: name it at the end, and keep going with the main concept.
 4. **Climb.** Probe the concept itself, starting at `recall`.
