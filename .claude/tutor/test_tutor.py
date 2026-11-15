@@ -523,6 +523,34 @@ class Drill(Base):
             self.assertIn(text, block, key)
 
 
+class Build(Base):
+    BUILD = "06-builds/Measure cache locality.md"
+
+    def phase(self):
+        out = tutor.show_build(tutor.Kasten(self.root), "b-measure-cache-locality")
+        return next(line for line in out.split("\n") if line.startswith("phase:"))
+
+    def test_phase_follows_the_learner_sections(self):
+        self.assertEqual(self.phase(), "phase: before code")
+        fill(self.root, self.BUILD, "Plan", "Two loops, same data.")
+        self.assertEqual(self.phase(), "phase: before code")      # the failure is named first too
+        fill(self.root, self.BUILD, "The failure I'm going to cause on purpose", "Stride past the line.")
+        self.assertEqual(self.phase(), "phase: during")
+        fill(self.root, self.BUILD, "What actually happened", "8x.")
+        fill(self.root, self.BUILD, "What I got wrong", "Expected 2x.")
+        self.assertEqual(self.phase(), "phase: after")
+
+    def test_touched_concepts_resolve_to_ids(self):
+        self.assertEqual(tutor.touched(self.k, "b-measure-cache-locality"),
+                         ["c-memory-hierarchy", "c-latency-numbers"])
+        out = tutor.show_build(self.k, "Measure cache locality")
+        self.assertIn("c-memory-hierarchy  (Memory hierarchy and cache locality, explained)", out)
+
+    def test_concepts_are_refused(self):
+        with self.assertRaises(SystemExit):
+            tutor.show_build(self.k, "c-stack-vs-heap")
+
+
 class LogPath(Base):
     def test_second_session_same_day_gets_a_suffix(self):
         _, first = self.run_cli("log-path", "probe")
