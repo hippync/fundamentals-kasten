@@ -20,7 +20,7 @@ Write every question by the rules in [questions.md](questions.md).
    - After a wrong answer or E, **dig**: ask one or two questions at the same level or one below, from a different angle, until you can say what's missing (the misconception the picked distractor encodes, or the piece that isn't there). Conclude only once the digging agrees.
    - End on a `failure` question: the note's *Predict the failure* asked as a scenario. Then ask for the failure in one sentence of their own; this is the closest to *Predict the failure* a probe gets.
    - Done when you have a break point for the concept, or the learner answered the `failure` question correctly and their own sentence names a real failure (what breaks, under what condition), not a definition.
-5. **Explain.** Teach only the gap the break point shows. Socratic by default: ask the question that gets them one step past the break, and explain only what their answer shows is still missing. Expository when they ask for it or say they're low on energy: explain directly, then ask one question that checks it landed. Back every factual claim with a note in `05-sources/` (title and the section to open); a claim you can't trace there is said to be `#unsourced`. All of it in chat: what they take away, they write in the note themselves.
+5. **Explain.** Teach only the gap the break point shows. Socratic by default: ask the question that gets them one step past the break, and explain only what their answer shows is still missing. Expository when they ask for it or say they're low on energy: explain directly, then ask one question that checks it landed. Back every factual claim with a note in `05-sources/` (title and the section to open); a claim you can't trace there is said to be `#unsourced`. All of it in chat: what they take away, they write in the note themselves. When a picture would show the gap faster than words (a multiplication, a layout, a sequence), run `/visualize` on the one idea the break point needs.
 6. **Record.** For the concept and each prerequisite you probed, run `python3 .claude/tutor/tutor.py record <id> <result>`:
 
    | Result | When |
@@ -31,7 +31,7 @@ Write every question by the rules in [questions.md](questions.md).
    | `dont-know` | chose E at the first question and nothing after got further |
 
    A prerequisite answered correctly at `mechanism` is a `pass`; otherwise `fail`, or `dont-know` if they chose E.
-7. **Log.** Write the session log to the path from `python3 .claude/tutor/tutor.py log-path probe`, in the format in `_tutor/README.md` (*Session log*): `skill: probe`, the block from `progress`, every id you recorded under `concepts`, `result` the worst of them. Body: what was asked, where it broke (the misconception, in a sentence), what to reread and which source.
+7. **Log.** Write the session log to the path from `python3 .claude/tutor/tutor.py log-path probe`, in the format in `_tutor/README.md` (*Session log*): `skill: probe`, the block from `progress`, every id you recorded under `concepts`, `result` the worst of them. Body: what was asked, where it broke (the misconception, in a sentence), what to reread and which source, and the embed line for any diagram `/visualize` drew.
 
 Done when every probed concept has a ledger entry dated today, the log file exists, and the learner has heard the break point and what to reread.
 
