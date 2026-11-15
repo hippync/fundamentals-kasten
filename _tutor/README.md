@@ -8,6 +8,7 @@ You don't need this folder unless you use Breakpoint. Without Claude Code it sta
 
 ```
 _tutor/
+├── Dashboard.base  Obsidian Bases views: concepts by status, revisits due, sessions, builds
 ├── progress.md     where you are: current block, start date, languages
 ├── ledger/         one file per concept you've been probed on: its box and when it's next due
 ├── logs/           one file per session: what was probed and how it went

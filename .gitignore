@@ -19,5 +19,6 @@ __pycache__/
 _tutor/**
 !_tutor/**/
 !_tutor/README.md
+!_tutor/Dashboard.base
 !_tutor/**/.gitkeep
 !_tutor/templates/**
