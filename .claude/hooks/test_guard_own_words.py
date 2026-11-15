@@ -132,6 +132,41 @@ class Guard(unittest.TestCase):
             with self.subTest(head=head):
                 self.blocked("Edit", self.build, old_string=head, new_string=head + "\nFilled in.\n")
 
+    # --- red team (docs/evals/redteam.md) --------------------------------------
+
+    def test_type_flip_is_blocked(self):
+        err = self.blocked("Edit", self.concept, old_string='type: "concept"', new_string='type: "scratch"')
+        self.assertIn("type", err)
+
+    def test_uppercase_extension_is_checked(self):
+        upper = self.concept[:-3] + ".MD"
+        if not os.path.exists(upper):
+            self.skipTest("case-sensitive filesystem: .MD is another file")
+        self.blocked("Edit", upper, old_string=OWN_WORDS_PLACEHOLDER, new_string="A model answer.")
+
+    def test_symlink_without_md_extension_is_checked(self):
+        link = os.path.join(self.dir, "alias.txt")
+        os.symlink(self.concept, link)
+        self.blocked("Edit", link, old_string=OWN_WORDS_PLACEHOLDER, new_string="A model answer.")
+
+    def test_filled_txt_draft_is_blocked(self):
+        path = os.path.join(self.dir, "draft.txt")
+        self.blocked("Write", path, content=self.text.replace(OWN_WORDS_PLACEHOLDER, "A model answer."))
+
+    def test_adding_type_to_a_filled_draft_is_blocked(self):
+        path = os.path.join(self.dir, "draft.md")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(self.text.replace('type: "concept"', 'type: ""')
+                    .replace(OWN_WORDS_PLACEHOLDER, "A model answer."))
+        self.blocked("Edit", path, old_string='type: ""', new_string='type: "concept"')
+
+    def test_decoy_heading_does_not_hide_the_real_one(self):
+        own = "## In my own words\n\n" + OWN_WORDS_PLACEHOLDER
+        decoy = own + "\n\n## Decoy\n\n## What it is"
+        tampered = self.text.replace("## What it is", decoy, 1)
+        tampered = tampered[::-1].replace(own[::-1], "## In my own words\n\nA model answer."[::-1], 1)[::-1]
+        self.blocked("Write", self.concept, content=tampered)
+
     def test_garbage_input_fails_closed(self):
         p = subprocess.run([sys.executable, HOOK], input="not json", capture_output=True, text=True)
         self.assertEqual(p.returncode, 2)

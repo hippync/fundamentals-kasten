@@ -48,6 +48,29 @@ def sections(text, kind):
     return out
 
 
+def occurrences(text, kind):
+    """Like sections(), but every copy of each heading, in order. A decoy copy of a
+    section planted above the real one mustn't hide a change to the real one."""
+    lines = text.replace("\r\n", "\n").split("\n")
+    out = {}
+    for head in PROTECTED[kind]:
+        found = []
+        for i, line in enumerate(lines):
+            if line.rstrip() != head:
+                continue
+            body = []
+            for nxt in lines[i + 1:]:
+                if head == CALLOUT:
+                    if not nxt.startswith(">"):
+                        break
+                elif nxt.startswith("## ") or nxt.startswith("# "):
+                    break
+                body.append(nxt.rstrip())
+            found.append("\n".join(body).strip())
+        out[head] = found
+    return out
+
+
 def apply_edit(text, old, new, replace_all=False):
     if old not in text:
         return None                     # the tool itself will reject this edit
@@ -75,19 +98,29 @@ def is_blank(content):
     return content is None or not SCAFFOLD.sub("", content).strip()
 
 
+TYPE = "type"                           # stands for the frontmatter field in the list of hits
+
+
 def changed_sections(before, after):
-    kind = note_type(before) if before else None
-    kind = kind if kind in PROTECTED else note_type(after)
-    if kind not in PROTECTED:
-        return []
-    old = sections(before, kind) if before else {}
-    new = sections(after, kind)
-    if not before:                      # a new note: only blank sections may be written
-        return [h for h in PROTECTED[kind] if not is_blank(new[h])]
-    return [h for h in PROTECTED[kind] if old[h] != new[h]]
+    """The protected parts this change would touch: headings, or TYPE.
+
+    Decided by content, never by file name, so a .MD path, a symlink or a .txt
+    draft gets the same check as the note itself."""
+    was, now = note_type(before) if before else None, note_type(after)
+    if was in PROTECTED:
+        if now != was:                  # turning a note into something else unprotects it
+            return [TYPE]
+        old, new = occurrences(before, was), occurrences(after, was)
+        return [h for h in PROTECTED[was] if old[h] != new[h]]
+    if now in PROTECTED:                # a new note, or a file becoming one:
+        new = occurrences(after, now)   # only blank sections may come with it
+        return [h for h in PROTECTED[now] if not all(is_blank(c) for c in new[h])]
+    return []
 
 
 def label(head):
+    if head == TYPE:
+        return "type (frontmatter)"
     return "Predict the failure" if head == CALLOUT else head[3:]
 
 
@@ -96,7 +129,7 @@ def main():
     tool = event.get("tool_name", "")
     args = event.get("tool_input", {}) or {}
     path = args.get("file_path", "")
-    if tool not in ("Edit", "MultiEdit", "Write") or not path.endswith(".md"):
+    if tool not in ("Edit", "MultiEdit", "Write") or not path:
         return 0
     before = ""
     if os.path.exists(path):
