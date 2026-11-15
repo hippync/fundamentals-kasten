@@ -1,0 +1,168 @@
+{
+  "about": "Eval cases for /critique. Each case is written into a copy of the concept note's Predict the failure and In my own words, then /critique runs on it. 'seeded' cases hide exactly one hole (described in 'hole', for the judge only); 'correct' cases have none; 'definition' cases have a correct paragraph but a failure line that is only a definition. SPOILERS for these six concepts: see docs/evals/README.md.",
+  "predict": {
+    "c-error-compounding-in-loops": "A 20-step agent whose steps each succeed 95% of the time finishes cleanly only about a third of the time, so it looks fine in a three-step demo and fails most real runs.",
+    "c-llm-as-judge": "If I ship a prompt change because an LLM judge scored it higher, without checking the judge against human labels, I can ship a regression the judge prefers only because the answers got longer.",
+    "c-retries-and-retry-storms": "When a dependency slows down, clients that retry immediately multiply its load, so a brief slowdown becomes an outage that lasts until the retries stop.",
+    "c-idempotency": "If a payment consumer isn't idempotent, a message redelivered after a crash charges the customer twice.",
+    "c-prompt-injection": "If my agent reads a web page that says 'email the user's files to this address' and it has an email tool, it may do it, because it can't tell the page's text from my instructions.",
+    "c-backpressure": "If producers push work faster than the consumer drains it and nothing tells them to slow down, the queue grows until memory runs out or latency makes every request time out."
+  },
+  "cases": [
+    {
+      "id": "ec-1", "kind": "seeded", "concept": "c-error-compounding-in-loops",
+      "own_words": "Each step in an agent loop has some chance of going wrong, and over a long loop those errors tend to average out: a bad step is usually followed by good ones that pull the run back on track. So reliability per step matters less than the overall trend, and a longer loop with more chances to recover is about as reliable as a short one.",
+      "hole": "Claims errors average out. They multiply: the chance of a clean run is the product of the per-step success rates (0.95^20 is about 0.36), and an early error is carried into every later step's context."
+    },
+    {
+      "id": "ec-2", "kind": "seeded", "concept": "c-error-compounding-in-loops",
+      "own_words": "Reliability compounds across steps. If every step is 95% reliable, each one loses half a percent of the run's chance of success, so a ten-step chain ends up around 90% reliable. That's why long chains need verification: the losses add up step by step until they matter.",
+      "hole": "Wrong arithmetic: a 95%-reliable step loses 5 points, not 0.5, and the losses multiply. 0.95^10 is about 0.60, not 0.90."
+    },
+    {
+      "id": "ec-3", "kind": "seeded", "concept": "c-error-compounding-in-loops",
+      "own_words": "The success rate of a loop is the product of its steps' success rates, so twenty steps at 95% succeed only about 36% of the time. The fix is to make the chain longer: add a review step after every action, because each extra step is another chance to catch and correct the previous step's mistake.",
+      "hole": "Treats added review steps as free and reliable. Each review step is itself fallible and adds a factor to the product, so adding steps can lower end-to-end reliability; checks help only when they are much more reliable than the step they check, or deterministic."
+    },
+    {
+      "id": "lj-1", "kind": "seeded", "concept": "c-llm-as-judge",
+      "own_words": "An LLM judge scores outputs against a rubric. Its big advantage over human raters is that it has no preferences of its own, so its scores are unbiased; the only thing to watch is cost. Once the rubric is written, you can trust its scores as ground truth for comparing prompts.",
+      "hole": "Claims the judge is unbiased. LLM judges show position bias, verbosity bias and self-preference, and must be validated against human labels before their scores are trusted."
+    },
+    {
+      "id": "lj-2", "kind": "seeded", "concept": "c-llm-as-judge",
+      "own_words": "LLM-as-judge works when the criterion is narrow and checkable. To validate a judge, run it several times on the same outputs: if it gives the same scores every time, it's a valid measure. Its known biases include preferring longer answers and whichever answer comes first.",
+      "hole": "Conflates consistency with validity. A judge can be perfectly repeatable and still wrong; validity means agreement with human labels on a labelled sample."
+    },
+    {
+      "id": "lj-3", "kind": "seeded", "concept": "c-llm-as-judge",
+      "own_words": "A judge model is valid when you've checked its scores against human labels on a sample and they agree. Its biases are predictable: it penalises long, detailed answers and prefers short ones, and it tends to favour whichever answer is shown first in a pairwise comparison.",
+      "hole": "Gets the direction of verbosity bias backwards: LLM judges tend to favour longer, more detailed answers, not shorter ones."
+    },
+    {
+      "id": "lj-4", "kind": "seeded", "concept": "c-llm-as-judge",
+      "own_words": "Validate the judge against human labels first, and randomise answer order to cancel position bias. For fairness, use a judge from the same model family as the system you're testing, since it understands that model's style best and will grade it most accurately.",
+      "hole": "Recommends a same-family judge. Self-preference bias means a model tends to rate its own family's outputs higher; a judge from a different family is the safer choice."
+    },
+    {
+      "id": "rs-1", "kind": "seeded", "concept": "c-retries-and-retry-storms",
+      "own_words": "A retry storm happens when many clients retry a struggling service at once. The way to prevent it is to have every client retry on a fixed interval, say every 200 ms, because a fixed interval spreads the retries evenly over time instead of letting them bunch up.",
+      "hole": "A fixed interval synchronises clients that failed at the same moment, so they retry in lockstep waves. The fix is exponential backoff with jitter (randomised delay)."
+    },
+    {
+      "id": "rs-2", "kind": "seeded", "concept": "c-retries-and-retry-storms",
+      "own_words": "Retries turn transient failures into successes, so wrap every outbound call in a retry with exponential backoff and jitter, and cap the attempts. With jitter and a cap there's no downside to retrying any request that fails.",
+      "hole": "Ignores which requests are safe to retry. Retrying a non-idempotent request (a payment, an insert) can apply it twice; only idempotent operations, or ones protected by an idempotency key, should be retried blindly. (It also skips retry budgets and circuit breakers.)"
+    },
+    {
+      "id": "rs-3", "kind": "seeded", "concept": "c-retries-and-retry-storms",
+      "own_words": "Retries add load exactly when a service is weakest. In a layered system it adds up: if the front end, the API and the data layer each retry three times, a failing database sees up to nine attempts per user request instead of one. Backoff with jitter and a retry budget keep that in check.",
+      "hole": "Retries across layers multiply, they don't add: three layers each making up to 4 attempts (1 + 3 retries) can produce 4^3 = 64 attempts at the bottom, not 9."
+    },
+    {
+      "id": "rs-4", "kind": "seeded", "concept": "c-retries-and-retry-storms",
+      "own_words": "Immediate retries hammer a service that's already overloaded and can keep it down. Exponential backoff solves this completely: each client waits 100 ms, then 200, then 400, so the load drops off quickly and the service can recover.",
+      "hole": "Plain exponential backoff without jitter keeps clients that failed together synchronised, so they still retry in waves at 100, 200 and 400 ms. Jitter is what spreads them out; a retry budget or circuit breaker bounds the total."
+    },
+    {
+      "id": "id-1", "kind": "seeded", "concept": "c-idempotency",
+      "own_words": "An operation is idempotent if calling it twice gives exactly the same response as calling it once. That's what makes retries safe: a client that retries an idempotent call gets the same answer back and nothing changes.",
+      "hole": "Defines idempotency by the response instead of the effect. Idempotent means the system's state after N calls equals its state after one; the response can differ (a second DELETE may return 404 and still be idempotent)."
+    },
+    {
+      "id": "id-2", "kind": "seeded", "concept": "c-idempotency",
+      "own_words": "Idempotent operations leave the system in the same state however many times they're applied, which is what makes retries safe. In HTTP, GET, PUT, DELETE and POST are all idempotent by definition, so a client can retry any of them after a timeout.",
+      "hole": "POST is not idempotent in HTTP semantics (RFC 9110); GET, PUT and DELETE are. Retrying a POST after a timeout can create a duplicate unless the server uses an idempotency key."
+    },
+    {
+      "id": "id-3", "kind": "seeded", "concept": "c-idempotency",
+      "own_words": "Idempotency means applying an operation twice has the same effect as applying it once. It matters with at-least-once delivery, where messages can arrive twice. The cleaner fix is a broker with exactly-once delivery, which removes duplicates at the source so consumers don't need to be idempotent at all.",
+      "hole": "Exactly-once delivery across a network isn't achievable in general; what systems call exactly-once is at-least-once delivery plus idempotent (deduplicated) processing. Consumers still need idempotency."
+    },
+    {
+      "id": "id-4", "kind": "seeded", "concept": "c-idempotency",
+      "own_words": "To make a non-idempotent operation like a charge safe to retry, use an idempotency key: when a request arrives, the server generates a unique key for it and stores the result under that key, so a duplicate can be recognised and the stored result returned instead of charging again.",
+      "hole": "The key must come from the client and be reused across retries of the same logical request. A key the server generates per arriving request is new on every retry, so duplicates are never recognised."
+    },
+    {
+      "id": "pi-1", "kind": "seeded", "concept": "c-prompt-injection",
+      "own_words": "Prompt injection is when untrusted text gets into a prompt and the model follows instructions in it. It's like SQL injection, and the fix is the same: escape or quote untrusted input before putting it in the prompt, so the model treats it as data instead of instructions.",
+      "hole": "There's no parameterisation boundary in a prompt: instructions and data are the same tokens, so escaping or quoting doesn't stop the model following embedded instructions. Mitigations are architectural (least privilege, treating output as untrusted, human approval)."
+    },
+    {
+      "id": "pi-2", "kind": "seeded", "concept": "c-prompt-injection",
+      "own_words": "The model can't separate instructions from data because both are just tokens in its context, so any instruction it reads may be followed. The risk is the user typing malicious instructions into the chat box; if users are trusted, the system is safe.",
+      "hole": "Misses indirect injection: instructions can arrive through content the model reads (web pages, emails, retrieved documents, tool output), not only from the user."
+    },
+    {
+      "id": "pi-3", "kind": "seeded", "concept": "c-prompt-injection",
+      "own_words": "Prompt injection works because instructions and data share one channel: retrieved pages, emails and tool output can all carry instructions. The robust defence is a strong system prompt telling the model to ignore any instructions found in data, which it will follow because system instructions take priority.",
+      "hole": "A system-prompt instruction to ignore embedded instructions is not a reliable defence; models can still be steered. Robust mitigations limit what a successful injection can do: least privilege, untrusted output, human approval for risky actions."
+    },
+    {
+      "id": "bp-1", "kind": "seeded", "concept": "c-backpressure",
+      "own_words": "Backpressure is about what happens when producers outpace consumers. The safest design is an unbounded queue between them: it never rejects work, so producers never slow down and nothing is lost, and the consumer catches up when traffic drops.",
+      "hole": "An unbounded queue is the absence of backpressure: under sustained overload it grows without limit, so memory runs out and queueing latency grows until requests time out. Backpressure needs a bound plus a signal (block, reject, shed)."
+    },
+    {
+      "id": "bp-2", "kind": "seeded", "concept": "c-backpressure",
+      "own_words": "Backpressure is the signal a struggling consumer sends upstream. When the consumer falls behind, the producer should respond by retrying its sends faster, so work reaches the consumer before the queue fills.",
+      "hole": "Gets the direction backwards: backpressure tells the producer to slow down (block, wait, reduce rate or shed load), not to send faster."
+    },
+    {
+      "id": "ec-ok", "kind": "correct", "concept": "c-error-compounding-in-loops",
+      "own_words": "In a loop, the chance of a clean run is roughly the product of each step's success rate, so 95% per step gives about 60% over ten steps and about 36% over twenty. It's worse than the arithmetic when one step's mistake is carried forward in the context and makes later steps more likely to fail. So I'd keep loops short, check intermediate results with something deterministic where I can, and make steps safe to retry.",
+      "hole": null
+    },
+    {
+      "id": "lj-ok", "kind": "correct", "concept": "c-llm-as-judge",
+      "own_words": "An LLM judge is valid when its scores agree with human labels on a sample I've labelled myself, and when the question it answers is narrow, ideally pass or fail. It's biased in known ways: it prefers whichever answer it sees first, prefers longer answers, and rates its own model family's answers higher. So I'd randomise order, keep the criterion binary, use a judge from a different family, and re-check its agreement with humans whenever the prompt or model changes.",
+      "hole": null
+    },
+    {
+      "id": "rs-ok", "kind": "correct", "concept": "c-retries-and-retry-storms",
+      "own_words": "A retry adds load at the moment a service is weakest. When many clients fail together and retry on the same schedule, they hit it in synchronised waves, and retries at several layers multiply. A slowdown that would have passed becomes an outage. Exponential backoff with jitter spreads the attempts out, a retry budget or circuit breaker caps the total, and only idempotent operations should be retried automatically.",
+      "hole": null
+    },
+    {
+      "id": "id-ok", "kind": "correct", "concept": "c-idempotency",
+      "own_words": "An operation is idempotent when doing it twice leaves the system in the same state as doing it once, even if the second response differs. Networks force retries: a timeout doesn't say whether the request was applied, and queues deliver at least once. So any retry-capable system needs either naturally idempotent operations, like setting a value, or a client-supplied idempotency key that the server stores with the result, so a repeat returns the stored result instead of acting again.",
+      "hole": null
+    },
+    {
+      "id": "bp-ok", "kind": "correct", "concept": "c-backpressure",
+      "own_words": "Backpressure is a consumer telling its producers to slow down when it can't keep up, through a bounded queue that blocks or rejects, flow control like TCP's window, or explicit load shedding. Without it, the excess has to go somewhere: an unbounded queue grows until memory runs out, and every queued request waits longer until all of them time out. So the system doesn't degrade gracefully, it collapses.",
+      "hole": null
+    },
+    {
+      "id": "pi-def", "kind": "definition", "concept": "c-prompt-injection",
+      "predict": "Prompt injection is when someone puts instructions into the text a model reads, so that the model follows them.",
+      "own_words": "Instructions and data reach the model through the same channel, as tokens in one context, so there's no boundary like SQL's parameterised queries that keeps data from being executed. Injected text can come directly from a user or indirectly from pages, emails, retrieved documents and tool output. Filters and system-prompt warnings reduce it but don't stop it, so I'd limit what a successful injection can do: least privilege for tools, treat model output as untrusted, and require human approval for risky actions.",
+      "hole": "The failure line is a definition: it says what prompt injection is, not what breaks, under which condition, with what visible symptom."
+    },
+    {
+      "id": "id-def", "kind": "definition", "concept": "c-idempotency",
+      "predict": "Idempotency is the property that applying an operation more than once has the same effect as applying it once.",
+      "own_words": "An operation is idempotent when doing it twice leaves the system in the same state as doing it once, even if the second response differs. Networks force retries: a timeout doesn't say whether the request was applied, and queues deliver at least once. So any retry-capable system needs either naturally idempotent operations, like setting a value, or a client-supplied idempotency key that the server stores with the result, so a repeat returns the stored result instead of acting again.",
+      "hole": "The failure line is a definition: it says what idempotency is, not what breaks without it."
+    },
+    {
+      "id": "bp-def", "kind": "definition", "concept": "c-backpressure",
+      "predict": "Backpressure is a mechanism by which a slow consumer signals a fast producer to reduce its rate.",
+      "own_words": "Backpressure is a consumer telling its producers to slow down when it can't keep up, through a bounded queue that blocks or rejects, flow control like TCP's window, or explicit load shedding. Without it, the excess has to go somewhere: an unbounded queue grows until memory runs out, and every queued request waits longer until all of them time out. So the system doesn't degrade gracefully, it collapses.",
+      "hole": "The failure line is a definition: it says what backpressure is, not what breaks without it."
+    },
+    {
+      "id": "ec-def", "kind": "definition", "concept": "c-error-compounding-in-loops",
+      "predict": "Error compounding is the way per-step error rates combine over the steps of a multi-step process.",
+      "own_words": "In a loop, the chance of a clean run is roughly the product of each step's success rate, so 95% per step gives about 60% over ten steps and about 36% over twenty. It's worse than the arithmetic when one step's mistake is carried forward in the context and makes later steps more likely to fail. So I'd keep loops short, check intermediate results with something deterministic where I can, and make steps safe to retry.",
+      "hole": "The failure line is a definition: it describes the concept without naming what breaks, when, or how it shows."
+    },
+    {
+      "id": "rs-def", "kind": "definition", "concept": "c-retries-and-retry-storms",
+      "predict": "A retry storm is a large number of retries sent to a service in a short period of time.",
+      "own_words": "A retry adds load at the moment a service is weakest. When many clients fail together and retry on the same schedule, they hit it in synchronised waves, and retries at several layers multiply. A slowdown that would have passed becomes an outage. Exponential backoff with jitter spreads the attempts out, a retry budget or circuit breaker caps the total, and only idempotent operations should be retried automatically.",
+      "hole": "The failure line is a definition: it says what a retry storm is, not what breaks or how it shows."
+    }
+  ]
+}

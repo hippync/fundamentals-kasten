@@ -1,0 +1,15 @@
+{
+  "about": "Quiz items for /probe. Each line asks the model to write one probe question by .claude/skills/probe/questions.md for a concept at a level. The runner lints the result and asks a judge whether the correct option stands out by form alone (length, specificity, grammar, hedging, echoing the stem) — that is, whether a test-wise learner could spot the answer without knowing the material.",
+  "items": [
+    {"id": "q-ec-consequence", "concept": "c-error-compounding-in-loops", "level": "consequence"},
+    {"id": "q-ec-failure", "concept": "c-error-compounding-in-loops", "level": "failure"},
+    {"id": "q-lj-mechanism", "concept": "c-llm-as-judge", "level": "mechanism"},
+    {"id": "q-lj-failure", "concept": "c-llm-as-judge", "level": "failure"},
+    {"id": "q-rs-mechanism", "concept": "c-retries-and-retry-storms", "level": "mechanism"},
+    {"id": "q-rs-consequence", "concept": "c-retries-and-retry-storms", "level": "consequence"},
+    {"id": "q-id-recall", "concept": "c-idempotency", "level": "recall"},
+    {"id": "q-id-failure", "concept": "c-idempotency", "level": "failure"},
+    {"id": "q-pi-mechanism", "concept": "c-prompt-injection", "level": "mechanism"},
+    {"id": "q-bp-consequence", "concept": "c-backpressure", "level": "consequence"}
+  ]
+}
