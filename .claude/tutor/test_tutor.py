@@ -371,6 +371,94 @@ class Concept(Base):
             tutor.concept_info(self.k, "Measure cache locality")
 
 
+def fill(root, rel, heading, text):
+    """Write the learner's text under a heading, the way the learner would."""
+    path = os.path.join(root, rel)
+    with open(path) as f:
+        note = f.read()
+    if heading == "Predict the failure":
+        note = note.replace("> *What breaks when this is absent, wrong, or misunderstood? One sentence, "
+                            "written by you. Until this line exists, the concept is not yours.*",
+                            f"> {text}")
+    else:
+        note = note.replace(f"## {heading}\n", f"## {heading}\n\n{text}\n", 1)
+    with open(path, "w") as f:
+        f.write(note)
+
+
+class Status(Base):
+    STACK = "01-systems/s01/Stack vs heap.md"
+
+    def status(self, cid="c-stack-vs-heap"):
+        return tutor.Kasten(self.root).notes[cid]["fm"]
+
+    def test_sections_reports_written_and_empty(self):
+        fill(self.root, self.STACK, "What it is", "Two regions of memory.")
+        _, have = tutor.filled(tutor.Kasten(self.root), "c-stack-vs-heap")
+        self.assertEqual(have, {"Predict the failure": False, "What it is": True,
+                                "How it breaks": False, "In my own words": False})
+
+    def test_stub_to_drafted_needs_the_body(self):
+        cal = "01-systems/s01/System calls.md"
+        with self.assertRaises(SystemExit):
+            self.run_cli("set-status", "c-system-calls", "drafted")
+        for h in ("Predict the failure", "What it is", "How it breaks"):
+            fill(self.root, cal, h, "Learner text.")
+        self.run_cli("set-status", "c-system-calls", "drafted")
+        self.assertEqual(self.status("c-system-calls")["status"], "drafted")
+
+    def test_drafted_to_explained_needs_own_words(self):
+        with self.assertRaises(SystemExit):
+            self.run_cli("set-status", "c-stack-vs-heap", "explained")
+        fill(self.root, self.STACK, "In my own words", "My paragraph.")
+        self.run_cli("set-status", "c-stack-vs-heap", "explained")
+        self.assertEqual(self.status()["status"], "explained")
+
+    def test_explained_to_tested_needs_a_build_post_mortem(self):
+        build = "06-builds/Measure cache locality.md"
+        with self.assertRaises(SystemExit):
+            self.run_cli("set-status", "c-memory-hierarchy", "tested")
+        fill(self.root, build, "What actually happened", "It was 8x slower.")
+        with self.assertRaises(SystemExit):                       # half a post-mortem isn't enough
+            self.run_cli("set-status", "c-memory-hierarchy", "tested")
+        fill(self.root, build, "What I got wrong", "I expected 2x.")
+        _, out = self.run_cli("set-status", "c-memory-hierarchy", "tested")
+        self.assertIn("b-measure-cache-locality", out)
+        self.assertEqual(self.status("c-memory-hierarchy")["status"], "tested")
+
+    def test_no_skipping_and_no_back_without_reread(self):
+        for cid, to in (("c-latency-numbers", "explained"), ("c-stack-vs-heap", "stub"),
+                        ("c-tokens", "tested"), ("c-latency-numbers", "drafted --reread")):
+            with self.assertRaises(SystemExit, msg=(cid, to)):
+                self.run_cli("set-status", cid, *to.split())
+
+    def test_step_back_adds_reread_once_and_touches_nothing_else(self):
+        with open(os.path.join(self.root, self.STACK)) as f:
+            before = f.read()
+        self.run_cli("set-status", "c-stack-vs-heap", "stub", "--reread")
+        with open(os.path.join(self.root, self.STACK)) as f:
+            after = f.read()
+        self.assertEqual(self.status()["status"], "stub")
+        self.assertEqual(self.status()["tags"], ["concept", "reread"])
+        self.assertEqual(after, before.replace('status: "drafted"', 'status: "stub"')
+                         .replace('  - "concept"\n', '  - "concept"\n  - "reread"\n'))
+
+    def test_check_writes_nothing(self):
+        fill(self.root, self.STACK, "In my own words", "My paragraph.")
+        _, out = self.run_cli("set-status", "c-stack-vs-heap", "explained", "--check")
+        self.assertIn("allowed", out)
+        self.assertEqual(self.status()["status"], "drafted")
+
+    def test_guard_hook_allows_the_change(self):
+        sys.path.insert(0, os.path.join(REPO, ".claude/hooks"))
+        import guard_own_words as g
+        with open(os.path.join(self.root, self.STACK)) as f:
+            before = f.read()
+        self.run_cli("set-status", "c-stack-vs-heap", "stub", "--reread")
+        with open(os.path.join(self.root, self.STACK)) as f:
+            self.assertEqual(g.changed_sections(before, f.read()), [])
+
+
 class LogPath(Base):
     def test_second_session_same_day_gets_a_suffix(self):
         _, first = self.run_cli("log-path", "probe")

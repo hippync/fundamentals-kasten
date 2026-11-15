@@ -14,13 +14,19 @@ Formats: _tutor/README.md.
     python3 .claude/tutor/tutor.py log-path probe
     python3 .claude/tutor/tutor.py concept "Stack vs heap"
     python3 .claude/tutor/tutor.py record c-stack-vs-heap partial
+    python3 .claude/tutor/tutor.py sections "Stack vs heap"
+    python3 .claude/tutor/tutor.py set-status c-stack-vs-heap explained
 
-Every command takes --root (default: this repo) and --today (default: today).
+set-status is the one command that writes to a note: frontmatter status and
+tags only, along the transitions in _tutor/README.md. Run it after the learner
+confirms. Every command takes --root (default: this repo) and --today (default: today).
 Standard library only, like scripts/.
 """
 import argparse, datetime, math, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "hooks"))
+from guard_own_words import PROTECTED, CALLOUT, sections as protected_sections, is_blank  # noqa: E402
 DEFAULT_ROOT = os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(os.path.dirname(HERE))
 NOTE_DIRS = ("01-systems", "02-ai", "03-methodologies", "04-senior-multipliers",
              "06-builds", "07-program")
@@ -285,7 +291,10 @@ def record(k, concept_id, result, today):
         raise SystemExit(f"{concept_id!r} is not a concept id. Use the id from the note's frontmatter.")
     old = next((e for e in k.ledger() if e["concept"] == concept_id), None)
     box = int(old["box"]) if old else 1                     # a first probe starts in box 1
-    box = min(box + 1, 5) if result == "pass" else box if result == "partial" else 1
+    if result == "pass":
+        box = min(box + 1, 5)
+    elif result != "partial":                               # fail, dont-know
+        box = 1
     entry = {"concept": concept_id, "box": box, "last-result": result,
              "last-probed": today.isoformat(),
              "next-due": (today + datetime.timedelta(days=INTERVALS[box])).isoformat()}
@@ -294,6 +303,90 @@ def record(k, concept_id, result, today):
     with open(os.path.join(folder, f"{concept_id}.md"), "w", encoding="utf-8") as f:
         f.write("---\n" + "".join(f"{key}: {value}\n" for key, value in entry.items()) + "---\n")
     return old, entry
+
+
+# ---------------------------------------------------------------- status
+
+def filled(k, ref):
+    """{label: True/False} for the learner's sections of a concept or build note."""
+    nid = k.resolve(ref)
+    kind = k.notes[nid]["fm"].get("type") if nid else None
+    if kind not in PROTECTED:
+        raise SystemExit(f"No concept or build note matches {ref!r}.")
+    found = protected_sections(k.notes[nid]["text"], kind)
+    label = lambda h: "Predict the failure" if h == CALLOUT else h[3:]
+    return nid, {label(h): not is_blank(found[h]) for h in PROTECTED[kind]}
+
+
+BODY = ("Predict the failure", "What it is", "How it breaks")
+POSTMORTEM = ("What actually happened", "What I got wrong")
+
+
+def builds_done_for(k, concept_id):
+    """Builds listing this concept under Concepts this touched, with a post-mortem written."""
+    out = []
+    for bid, note in sorted(k.of_type("build").items()):
+        touched = [k.resolve(t) for t in wikilinks(section(note["text"], "## Concepts this touched"))]
+        if concept_id in touched and all(filled(k, bid)[1][h] for h in POSTMORTEM):
+            out.append(bid)
+    return out
+
+
+def check_transition(k, cid, new, reread):
+    """Why the move is allowed, or SystemExit saying why not."""
+    if cid not in k.of_type("concept"):
+        raise SystemExit(f"{cid!r} is not a concept id.")
+    old = k.notes[cid]["fm"].get("status", "stub")
+    if new not in STATUS_ORDER:
+        raise SystemExit(f"Unknown status {new!r}; one of {', '.join(STATUS_ORDER)}.")
+    step = STATUS_ORDER.index(new) - STATUS_ORDER.index(old)
+    if step == -1:
+        if not reread:
+            raise SystemExit("A step back only follows a failed /revisit: pass --reread.")
+        return old, "one step back after a failed /revisit, tagged reread"
+    if step != 1 or reread:
+        raise SystemExit(f"{old} -> {new} is not a transition. Allowed: one step forward, "
+                         "or one step back with --reread.")
+    _, have = filled(k, cid)
+    if new == "drafted":
+        missing = [h for h in BODY if not have[h]]
+        if missing:
+            raise SystemExit(f"stub -> drafted needs {', '.join(missing)} written first.")
+        return old, "body sections filled"
+    if new == "explained":
+        if not have["In my own words"]:
+            raise SystemExit("drafted -> explained needs In my own words written.")
+        return old, ("In my own words written; closed book and no blocking hole from /critique "
+                     "are the learner's confirmation, not checked here")
+    builds = builds_done_for(k, cid)
+    if not builds:
+        raise SystemExit("explained -> tested needs a build that lists this concept under "
+                         "Concepts this touched, with What actually happened and What I got wrong filled.")
+    return old, "post-mortem written in " + ", ".join(builds)
+
+
+def set_status(k, cid, new, reread=False):
+    old, why = check_transition(k, cid, new, reread)
+    path = k.notes[cid]["path"]
+    text = read(path)
+    end = text.find("\n---", 4)
+    head, rest = text[:end], text[end:]
+    head, n = re.subn(r'(?m)^status:.*$', f'status: "{new}"', head, count=1)
+    if not n:
+        raise SystemExit(f"{k.rel(cid)} has no status line in its frontmatter.")
+    if reread and "reread" not in (k.notes[cid]["fm"].get("tags") or []):
+        lines = head.split("\n")
+        if "tags:" in lines:                    # append after the last item of the tags list
+            at = lines.index("tags:") + 1
+            while at < len(lines) and re.match(r"^\s+-", lines[at]):
+                at += 1
+            lines.insert(at, '  - "reread"')
+        else:
+            lines += ["tags:", '  - "reread"']
+        head = "\n".join(lines)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(head + rest)
+    return old, why
 
 
 def log_path(k, skill, today):
@@ -345,6 +438,13 @@ def main(argv=None):
     rp = sub.add_parser("record", help="apply a probe result to the concept's ledger file")
     rp.add_argument("concept")
     rp.add_argument("result", choices=RESULTS)
+    fp = sub.add_parser("sections", help="which of the learner's sections are written")
+    fp.add_argument("ref")
+    sp = sub.add_parser("set-status", help="change a concept's status along the transition rules")
+    sp.add_argument("concept")
+    sp.add_argument("status", choices=STATUS_ORDER)
+    sp.add_argument("--reread", action="store_true", help="the step back after a failed /revisit")
+    sp.add_argument("--check", action="store_true", help="say whether it's allowed; write nothing")
     lp = sub.add_parser("log-path", help="the next free session-log path for a skill")
     lp.add_argument("skill")
     args = ap.parse_args(argv)
@@ -376,6 +476,18 @@ def main(argv=None):
         old, new = record(k, args.concept, args.result, args.today)
         before = f"box {old['box']}" if old else "new"
         print(f"{new['concept']}: {args.result}, {before} -> box {new['box']}, next due {new['next-due']}")
+    elif args.cmd == "sections":
+        nid, have = filled(k, args.ref)
+        print(nid)
+        for h, ok in have.items():
+            print(f"  {'written' if ok else 'empty  '}  {h}")
+    elif args.cmd == "set-status":
+        if args.check:
+            old, why = check_transition(k, args.concept, args.status, args.reread)
+            print(f"allowed: {args.concept} {old} -> {args.status} ({why})")
+        else:
+            old, why = set_status(k, args.concept, args.status, args.reread)
+            print(f"{args.concept}: {old} -> {args.status} ({why})")
     elif args.cmd == "log-path":
         print(log_path(k, args.skill, args.today))
     return 0
