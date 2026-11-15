@@ -76,6 +76,10 @@ Breakpoint may change a concept note's `status` only along these steps. Claude p
 
 No other transition exists. In particular, Breakpoint never skips a step, and never moves a note forward because it judged your prose good.
 
+### Checkboxes
+
+`/drill` may tick a question in a theme's *Answer these* and the same question in [Questions — index](../00-meta/indexes/Questions%20—%20index.md), once you've answered it and confirmed you can answer it out loud without notes. It never unticks one, and never touches any other checkbox. Untick by hand when you find you can't answer one anymore.
+
 ## Why it's separate from the notes
 
 - **Your notes stay readable.** A concept note holds your understanding, not a probe history.

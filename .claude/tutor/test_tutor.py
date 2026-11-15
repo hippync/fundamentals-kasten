@@ -178,7 +178,11 @@ def make_kasten(root):
             ["Memory hierarchy and cache locality", "Latency numbers"]),
         "06-builds/Build a tiny GPT.md": build(
             "b-build-a-tiny-gpt", "Build a tiny GPT", "not started", ["Attention"]),
-        "_tutor/progress.md": '---\nblock: "blk-01-02"\nprogram-start: "2026-11-02"\n'
+        "00-meta/indexes/Questions — index.md": (
+            '---\nid: "idx-questions"\ntype: "index"\n---\n\n# Questions — index\n\n'
+            "## [[S01 — The machine]]\n\n- [ ] Why is a cache miss slow?\n- [ ] What is a system call?\n\n"
+            "## [[A1 — What a model actually is]]\n\n- [ ] What is a token?\n"),
+        "_tutor/progress.md":'---\nblock: "blk-01-02"\nprogram-start: "2026-11-02"\n'
                               'primary-language: "Go"\nsession-language: "English"\n---\n',
     }
     for concept_id, (box, result, probed, due) in LEDGER.items():
@@ -475,6 +479,48 @@ class Status(Base):
         self.run_cli("set-status", "c-stack-vs-heap", "stub", "--reread")
         with open(os.path.join(self.root, self.STACK)) as f:
             self.assertEqual(g.changed_sections(before, f.read()), [])
+
+
+class Drill(Base):
+    INDEX = "00-meta/indexes/Questions — index.md"
+    THEME = "01-systems/s01/S01 — The machine.md"
+
+    def text(self, path):
+        with open(os.path.join(self.root, path)) as f:
+            return f.read()
+
+    def test_theme_resolves_by_code_id_and_title(self):
+        for ref in ("S01", "s01", "t-s01", "S01 — The machine"):
+            self.assertEqual(tutor.theme_id(self.k, ref), "t-s01", ref)
+
+    def test_questions_for_a_theme_and_for_all(self):
+        self.assertEqual([q[0] for q in tutor.questions(self.k, "S01")], ["S01.1", "S01.2"])
+        self.assertEqual([q[0] for q in tutor.questions(self.k, "all")], ["S01.1", "S01.2", "A1.1"])
+
+    def test_tick_marks_theme_and_index_and_nothing_else(self):
+        theme_before, index_before = self.text(self.THEME), self.text(self.INDEX)
+        _, out = self.run_cli("tick", "S01.2")
+        self.assertIn("ticked in", out)
+        q = "What is a system call?"
+        self.assertEqual(self.text(self.THEME), theme_before.replace(f"- [ ] {q}", f"- [x] {q}"))
+        self.assertEqual(self.text(self.INDEX), index_before.replace(f"- [ ] {q}", f"- [x] {q}"))
+        _, again = self.run_cli("tick", "S01.2")
+        self.assertIn("already ticked", again)
+
+    def test_unknown_key_is_refused(self):
+        for bad in ("S01.9", "S01", "Z9.1"):
+            with self.assertRaises(SystemExit, msg=bad):
+                self.run_cli("tick", bad)
+
+    def test_real_index_matches_every_theme(self):
+        k = tutor.Kasten(REPO)
+        with open(os.path.join(REPO, self.INDEX)) as f:
+            index = f.read()
+        qs = tutor.questions(k, "all")
+        self.assertEqual(len(qs), index.count("\n- [ ] ") + index.count("\n- [x] "))
+        for key, _, text, tid in qs:
+            block = index.split(f"## [[{k.notes[tid]['fm']['title']}]]", 1)[1].split("\n## ", 1)[0]
+            self.assertIn(text, block, key)
 
 
 class LogPath(Base):
