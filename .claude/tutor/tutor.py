@@ -18,6 +18,7 @@ Formats: _tutor/README.md.
     python3 .claude/tutor/tutor.py set-status c-stack-vs-heap explained
     python3 .claude/tutor/tutor.py questions S01        # or: questions all
     python3 .claude/tutor/tutor.py tick S01.3
+    python3 .claude/tutor/tutor.py build "Measure cache locality"
 
 Two commands write to notes, and only after the learner confirms: set-status
 (frontmatter status and tags, along the transitions in _tutor/README.md) and
@@ -402,14 +403,41 @@ BODY = ("Predict the failure", "What it is", "How it breaks")
 POSTMORTEM = ("What actually happened", "What I got wrong")
 
 
+def touched(k, build_id):
+    """Concept ids under a build's Concepts this touched, in order."""
+    links = wikilinks(section(k.notes[build_id]["text"], "## Concepts this touched"))
+    ids = [k.resolve(t) for t in links]
+    return [i for i in ids if i and k.notes[i]["fm"].get("type") == "concept"]
+
+
 def builds_done_for(k, concept_id):
     """Builds listing this concept under Concepts this touched, with a post-mortem written."""
-    out = []
-    for bid, note in sorted(k.of_type("build").items()):
-        touched = [k.resolve(t) for t in wikilinks(section(note["text"], "## Concepts this touched"))]
-        if concept_id in touched and all(filled(k, bid)[1][h] for h in POSTMORTEM):
-            out.append(bid)
-    return out
+    return [bid for bid in sorted(k.of_type("build"))
+            if concept_id in touched(k, bid) and all(filled(k, bid)[1][h] for h in POSTMORTEM)]
+
+
+def show_build(k, ref):
+    bid, have = filled(k, ref)
+    note = k.notes[bid]
+    if note["fm"].get("type") != "build":
+        raise SystemExit(f"{ref!r} is a concept; /build-coach takes a build from 06-builds/.")
+    exercise = re.findall(r"(?m)^> (?!\[!)(.+)$", note["text"])
+    done_when = re.search(r"(?m)^\*\*Done when:\*\*\s*(.+)$", note["text"])
+    if not (have["Plan"] and have["The failure I'm going to cause on purpose"]):
+        phase = "before code"
+    elif all(have[h] for h in POSTMORTEM):
+        phase = "after"
+    else:
+        phase = "during"
+    out = [f"id: {bid}", f"title: {note['fm'].get('title')}", f"path: {k.rel(bid)}",
+           f"status: {note['fm'].get('status')}", f"phase: {phase}",
+           "exercise: " + " ".join(exercise),
+           "done when: " + (done_when.group(1) if done_when else "(not stated)"), "sections:"]
+    out += [f"  {'written' if ok else 'empty  '}  {h}" for h, ok in have.items()]
+    out.append("concepts this touched:")
+    out += [f"  {c}  ({k.notes[c]['fm'].get('title')}, {k.notes[c]['fm'].get('status', 'stub')})"
+            for c in touched(k, bid)] or ["  (none)"]
+    return "\n".join(out)
 
 
 def check_transition(k, cid, new, reread):
@@ -519,6 +547,8 @@ def main(argv=None):
     rp = sub.add_parser("record", help="apply a probe result to the concept's ledger file")
     rp.add_argument("concept")
     rp.add_argument("result", choices=RESULTS)
+    bp = sub.add_parser("build", help="a build's phase, sections written and concepts touched")
+    bp.add_argument("ref")
     fp = sub.add_parser("sections", help="which of the learner's sections are written")
     fp.add_argument("ref")
     sp = sub.add_parser("set-status", help="change a concept's status along the transition rules")
@@ -562,6 +592,8 @@ def main(argv=None):
         old, new = record(k, args.concept, args.result, args.today)
         before = f"box {old['box']}" if old else "new"
         print(f"{new['concept']}: {args.result}, {before} -> box {new['box']}, next due {new['next-due']}")
+    elif args.cmd == "build":
+        print(show_build(k, args.ref))
     elif args.cmd == "sections":
         nid, have = filled(k, args.ref)
         print(nid)
