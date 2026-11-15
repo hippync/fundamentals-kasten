@@ -12,6 +12,8 @@ Formats: _tutor/README.md.
     python3 .claude/tutor/tutor.py due
     python3 .claude/tutor/tutor.py plan --minutes 45
     python3 .claude/tutor/tutor.py log-path probe
+    python3 .claude/tutor/tutor.py concept "Stack vs heap"
+    python3 .claude/tutor/tutor.py record c-stack-vs-heap partial
 
 Every command takes --root (default: this repo) and --today (default: today).
 Standard library only, like scripts/.
@@ -24,6 +26,7 @@ NOTE_DIRS = ("01-systems", "02-ai", "03-methodologies", "04-senior-multipliers",
              "06-builds", "07-program")
 STATUS_ORDER = ("stub", "drafted", "explained", "tested")
 INTERVALS = {1: 1, 2: 3, 3: 7, 4: 14, 5: 30}          # box -> days until next due
+RESULTS = ("pass", "partial", "fail", "dont-know")
 SKILLS = ("next", "probe", "critique", "revisit", "drill", "build-coach")
 
 # Plan budget, in minutes.
@@ -245,6 +248,54 @@ def show_plan(p):
     return "\n".join(out)
 
 
+def concept_info(k, ref):
+    cid = k.resolve(ref)
+    if not cid or k.notes[cid]["fm"].get("type") != "concept":
+        raise SystemExit(f"No concept note matches {ref!r}. Try its id or exact title.")
+    note = k.notes[cid]
+    related = [k.resolve(t) for t in wikilinks(section(note["text"], "## Related"))]
+    prereqs = [r for r in related if r and k.notes[r]["fm"].get("type") == "concept"]
+    questions = re.findall(r"(?m)^- \[[ x]\] (.+)$",
+                           section(note["text"], "## Questions I should be able to answer"))
+    entry = next((e for e in k.ledger() if e["concept"] == cid), None)
+    return {"id": cid, "title": note["fm"].get("title"), "path": k.rel(cid),
+            "status": note["fm"].get("status", "stub"), "prerequisites": prereqs,
+            "questions": questions, "ledger": entry}
+
+
+def show_concept(k, info):
+    out = [f"id: {info['id']}", f"title: {info['title']}", f"path: {info['path']}",
+           f"status: {info['status']}"]
+    e = info["ledger"]
+    out.append(f"ledger: box {e['box']}, last {e['last-result']} on {e['last-probed']}, "
+               f"due {e['next-due']}" if e else "ledger: never probed")
+    out.append("prerequisites (from Related, in order):")
+    out += [f"  {p}  ({k.notes[p]['fm'].get('title')}, {k.notes[p]['fm'].get('status', 'stub')})"
+            for p in info["prerequisites"]] or ["  (none)"]
+    out.append("questions:")
+    out += [f"  - {q}" for q in info["questions"]] or ["  (none)"]
+    return "\n".join(out)
+
+
+def record(k, concept_id, result, today):
+    """Apply one probe result to a concept's ledger file; return the new entry."""
+    if result not in RESULTS:
+        raise SystemExit(f"Unknown result {result!r}; one of {', '.join(RESULTS)}.")
+    if concept_id not in k.of_type("concept"):
+        raise SystemExit(f"{concept_id!r} is not a concept id. Use the id from the note's frontmatter.")
+    old = next((e for e in k.ledger() if e["concept"] == concept_id), None)
+    box = int(old["box"]) if old else 1                     # a first probe starts in box 1
+    box = min(box + 1, 5) if result == "pass" else box if result == "partial" else 1
+    entry = {"concept": concept_id, "box": box, "last-result": result,
+             "last-probed": today.isoformat(),
+             "next-due": (today + datetime.timedelta(days=INTERVALS[box])).isoformat()}
+    folder = os.path.join(k.tutor, "ledger")
+    os.makedirs(folder, exist_ok=True)
+    with open(os.path.join(folder, f"{concept_id}.md"), "w", encoding="utf-8") as f:
+        f.write("---\n" + "".join(f"{key}: {value}\n" for key, value in entry.items()) + "---\n")
+    return old, entry
+
+
 def log_path(k, skill, today):
     if skill not in SKILLS:
         raise SystemExit(f"Unknown skill {skill!r}; one of {', '.join(SKILLS)}.")
@@ -289,6 +340,11 @@ def main(argv=None):
     pp = sub.add_parser("plan", help="what to do now, in order, for the time available")
     pp.add_argument("--minutes", type=int, default=60)
     pp.add_argument("--block", help="default: block in progress.md")
+    cp = sub.add_parser("concept", help="a concept's status, ledger entry, prerequisites and questions")
+    cp.add_argument("ref", help="id, title, [[link]] or path")
+    rp = sub.add_parser("record", help="apply a probe result to the concept's ledger file")
+    rp.add_argument("concept")
+    rp.add_argument("result", choices=RESULTS)
     lp = sub.add_parser("log-path", help="the next free session-log path for a skill")
     lp.add_argument("skill")
     args = ap.parse_args(argv)
@@ -314,6 +370,12 @@ def main(argv=None):
         if not block:
             raise SystemExit("No block: pass --block or create _tutor/progress.md first.")
         print(show_plan(plan(k, block, args.minutes, args.today)))
+    elif args.cmd == "concept":
+        print(show_concept(k, concept_info(k, args.ref)))
+    elif args.cmd == "record":
+        old, new = record(k, args.concept, args.result, args.today)
+        before = f"box {old['box']}" if old else "new"
+        print(f"{new['concept']}: {args.result}, {before} -> box {new['box']}, next due {new['next-due']}")
     elif args.cmd == "log-path":
         print(log_path(k, args.skill, args.today))
     return 0

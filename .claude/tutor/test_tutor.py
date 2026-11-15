@@ -313,6 +313,64 @@ class Progress(Base):
             self.run_cli("init-progress", "--block", "blk-01-02", "--start", "2026-11-02")
 
 
+class Record(Base):
+    def entry(self, cid):
+        return next(e for e in tutor.Kasten(self.root).ledger() if e["concept"] == cid)
+
+    def test_first_probe_starts_in_box_one_then_applies_the_result(self):
+        for result, box, due in (("pass", 2, "2026-11-17"), ("partial", 1, "2026-11-15"),
+                                 ("fail", 1, "2026-11-15"), ("dont-know", 1, "2026-11-15")):
+            path = os.path.join(self.root, "_tutor/ledger/c-embeddings.md")
+            if os.path.exists(path):
+                os.remove(path)
+            self.run_cli("record", "c-embeddings", result)
+            e = self.entry("c-embeddings")
+            self.assertEqual((e["box"], e["last-result"], e["last-probed"], e["next-due"]),
+                             (box, result, "2026-11-14", due), result)
+
+    def test_existing_entry_moves_by_the_box_table(self):
+        self.run_cli("record", "c-tokens", "pass")              # box 3 -> 4, 14 days
+        self.assertEqual((self.entry("c-tokens")["box"], self.entry("c-tokens")["next-due"]),
+                         (4, "2026-11-28"))
+        self.run_cli("record", "c-latency-numbers", "partial")  # box 2 stays, 3 days
+        self.assertEqual((self.entry("c-latency-numbers")["box"],
+                          self.entry("c-latency-numbers")["next-due"]), (2, "2026-11-17"))
+        self.run_cli("record", "c-tokens", "fail")              # back to 1
+        self.assertEqual(self.entry("c-tokens")["box"], 1)
+
+    def test_box_five_stays_five(self):
+        for _ in range(6):
+            self.run_cli("record", "c-attention", "pass")
+        self.assertEqual((self.entry("c-attention")["box"], self.entry("c-attention")["next-due"]),
+                         (5, "2026-12-14"))
+
+    def test_ledger_file_matches_the_template_shape(self):
+        self.run_cli("record", "c-embeddings", "fail")
+        with open(os.path.join(self.root, "_tutor/ledger/c-embeddings.md")) as f:
+            self.assertEqual(f.read(), "---\nconcept: c-embeddings\nbox: 1\nlast-result: fail\n"
+                                       "last-probed: 2026-11-14\nnext-due: 2026-11-15\n---\n")
+
+    def test_refuses_titles_and_unknown_ids(self):
+        for bad in ("Embeddings", "c-nope", "t-s01"):
+            with self.assertRaises(SystemExit, msg=bad):
+                self.run_cli("record", bad, "pass")
+        self.assertFalse(os.path.exists(os.path.join(self.root, "_tutor/ledger/Embeddings.md")))
+
+
+class Concept(Base):
+    def test_prerequisites_come_from_related_concepts_only(self):
+        with open(os.path.join(self.root, "01-systems/s01/System calls.md"), "a") as f:
+            f.write("- [[Stack vs heap]]\n- [[The OS scheduler and blocking IO]]\n")
+        info = tutor.concept_info(tutor.Kasten(self.root), "System calls")
+        self.assertEqual(info["prerequisites"], ["c-stack-vs-heap", "c-os-scheduler"])
+        self.assertEqual(info["questions"], ["A question about System calls?"])
+        self.assertEqual(info["ledger"]["box"], 1)
+
+    def test_only_concepts_resolve(self):
+        with self.assertRaises(SystemExit):
+            tutor.concept_info(self.k, "Measure cache locality")
+
+
 class LogPath(Base):
     def test_second_session_same_day_gets_a_suffix(self):
         _, first = self.run_cli("log-path", "probe")
