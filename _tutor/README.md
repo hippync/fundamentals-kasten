@@ -13,6 +13,7 @@ _tutor/
 ├── ledger/         one file per concept you've been probed on: its box and when it's next due
 ├── logs/           one file per session: what was probed and how it went
 ├── viz/            diagrams drawn for you during sessions
+├── guard/          only if a shell command touched your sections: the version it left, before the guard put the note back
 └── templates/      a starting progress.md, plus an example ledger file and log
 ```
 
