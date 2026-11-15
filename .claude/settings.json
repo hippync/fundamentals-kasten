@@ -13,6 +13,9 @@
     ]
   },
   "permissions": {
+    "allow": [
+      "Bash(python3 .claude/tutor/tutor.py:*)"
+    ],
     "deny": [
       "Bash(sed -i:*)",
       "Bash(sed --in-place:*)",

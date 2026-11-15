@@ -32,7 +32,7 @@ Refer to notes by frontmatter `id` in everything you write to `_tutor/`; filenam
 
 1. Read `_tutor/progress.md`. If it doesn't exist, ask for the current block, the program start date and the session language, take `primary-language` from the decision in `08-decisions/ADR-0001` if it's written, then create the file from `_tutor/templates/progress.md`.
 2. Read the current block's note in `07-program/`.
-3. List the ledger files in `_tutor/ledger/` with `next-due` on or before today.
+3. List the ledger files in `_tutor/ledger/` with `next-due` on or before today (`python3 .claude/tutor/tutor.py due`).
 4. Open with Rule 1 in one sentence, the current block, and how many revisits are due.
 
 Done when the learner has seen all three before anything else happens.
