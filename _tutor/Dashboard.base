@@ -1,0 +1,163 @@
+formulas:
+  due: date(note["next-due"])
+  probed: date(note["last-probed"])
+  session: date(note.date)
+  days_left: (date(note["next-due"]) - today()).days
+properties:
+  note.status:
+    displayName: Status
+  note.theme-name:
+    displayName: Rung
+  note.updated:
+    displayName: Updated
+  note.concept:
+    displayName: Concept
+  note.box:
+    displayName: Box
+  note.last-result:
+    displayName: Last result
+  formula.due:
+    displayName: Due
+  formula.probed:
+    displayName: Last probed
+  formula.days_left:
+    displayName: Days left
+  note.skill:
+    displayName: Skill
+  note.block:
+    displayName: Block
+  note.concepts:
+    displayName: Concepts
+  note.result:
+    displayName: Result
+  note.minutes:
+    displayName: Minutes
+  formula.session:
+    displayName: Date
+views:
+  - type: table
+    name: Systems ladder
+    filters:
+      and:
+        - type == "concept"
+        - ladder == "Systems ladder"
+    groupBy:
+      property: status
+      direction: ASC
+    order:
+      - file.name
+      - theme-name
+      - status
+      - updated
+    sort:
+      - property: theme-name
+        direction: ASC
+      - property: file.name
+        direction: ASC
+  - type: table
+    name: AI ladder
+    filters:
+      and:
+        - type == "concept"
+        - ladder == "AI ladder"
+    groupBy:
+      property: status
+      direction: ASC
+    order:
+      - file.name
+      - theme-name
+      - status
+      - updated
+    sort:
+      - property: theme-name
+        direction: ASC
+      - property: file.name
+        direction: ASC
+  - type: table
+    name: Running practices
+    filters:
+      and:
+        - type == "concept"
+        - ladder == "Running practices"
+    groupBy:
+      property: status
+      direction: ASC
+    order:
+      - file.name
+      - theme-name
+      - status
+      - updated
+    sort:
+      - property: theme-name
+        direction: ASC
+      - property: file.name
+        direction: ASC
+  - type: table
+    name: Revisits due
+    filters:
+      and:
+        - file.inFolder("_tutor/ledger")
+        - formula.due <= today()
+    order:
+      - concept
+      - formula.due
+      - box
+      - last-result
+      - formula.probed
+    sort:
+      - property: formula.due
+        direction: ASC
+      - property: box
+        direction: ASC
+  - type: table
+    name: Revisits this week
+    filters:
+      and:
+        - file.inFolder("_tutor/ledger")
+        - formula.due > today()
+        - formula.due <= today() + "7d"
+    order:
+      - concept
+      - formula.due
+      - formula.days_left
+      - box
+      - last-result
+    sort:
+      - property: formula.due
+        direction: ASC
+  - type: table
+    name: Recent sessions
+    filters:
+      and:
+        - file.inFolder("_tutor/logs")
+    order:
+      - file.name
+      - formula.session
+      - skill
+      - block
+      - concepts
+      - result
+      - minutes
+    sort:
+      - property: formula.session
+        direction: DESC
+      - property: file.name
+        direction: DESC
+    limit: 20
+  - type: table
+    name: Builds
+    filters:
+      and:
+        - type == "build"
+        - file.inFolder("06-builds")
+    groupBy:
+      property: status
+      direction: ASC
+    order:
+      - file.name
+      - theme-name
+      - status
+      - updated
+    sort:
+      - property: file.name
+        direction: ASC

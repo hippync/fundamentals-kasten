@@ -14,6 +14,9 @@ updated: ""
 The queries below are live if you have the **Dataview** plugin enabled. If you don't, ignore
 them and keep the manual table — nothing else here depends on either.
 
+**Using Breakpoint?** [[Dashboard.base]] in `_tutor/` shows the same statuses plus your
+revisits due and recent sessions. It uses Obsidian's built-in Bases, so it needs no plugin.
+
 ## The bar
 
 `explained` means you wrote it in your own words with the book closed. `tested` means you
