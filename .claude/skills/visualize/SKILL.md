@@ -19,7 +19,7 @@ One idea, fewest elements, every fact verified. The diagram goes in `_tutor/viz/
    | steps, flow, messages over time, states and transitions | `mermaid-maker` |
    | space or scale: memory layout, cache lines, a timeline, a log axis, proportions | `svg-maker` |
 
-4. **Draw.** Dispatch that agent with the idea, the verified facts and the base name `_tutor/viz/<YYYY-MM-DD>-<concept-id>-<slug>`. It renders, looks at the PNG and fixes it. If it returns a setup error, tell the learner the diagram needs [SETUP.md](SETUP.md), carry on without the picture, and log that.
+4. **Draw.** Dispatch that agent with the idea, the verified facts and the base name `_tutor/viz/<YYYY-MM-DD>-<concept-id>-<slug>`. It renders, inspects the image and corrects it. If it returns a setup error, tell the learner the diagram needs [SETUP.md](SETUP.md), carry on without the picture, and log that.
 5. **Show and embed.** Read the PNG to check it shows the idea from step 1, then point the learner at the file. In the session's log body, embed it on its own line: `![[<file name>.png|500]]` (the file name alone; Obsidian finds it in `_tutor/viz/`).
 
 Done when the PNG exists, the researcher supported every fact in it, and the session log embeds it.

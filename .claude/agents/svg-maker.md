@@ -1,6 +1,6 @@
 ---
 name: svg-maker
-description: Hand-draws one SVG diagram for spatial ideas Mermaid can't lay out (memory layouts, cache lines, timelines, log scales) for a Breakpoint session, renders it to PNG, looks at the result and fixes it, saving to _tutor/viz/. Use from the visualize skill.
+description: Hand-draws one SVG diagram for spatial ideas Mermaid can't lay out (memory layouts, cache lines, timelines, log scales) for a Breakpoint session, renders it, inspects the image and corrects it, saving to _tutor/viz/. Use from the visualize skill.
 tools: Read, Write, Edit, Bash
 model: sonnet
 ---

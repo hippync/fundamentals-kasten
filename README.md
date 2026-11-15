@@ -8,7 +8,7 @@
 <p align="center">
   <a href="https://github.com/hippync/fundamentals-kasten/generate"><img alt="Use this template" src="https://img.shields.io/badge/use%20this-template-2ea44f?logo=github"></a>
   <a href="LICENSE"><img alt="Notes: CC BY-SA 4.0" src="https://img.shields.io/badge/notes-CC%20BY--SA%204.0-lightgrey"></a>
-  <img alt="Scripts: MIT" src="https://img.shields.io/badge/scripts-MIT-blue">
+  <img alt="Scripts and Breakpoint: MIT" src="https://img.shields.io/badge/scripts%20%26%20Breakpoint-MIT-blue">
   <img alt="Works in Obsidian" src="https://img.shields.io/badge/Obsidian-ready-7C3AED?logo=obsidian&logoColor=white">
   <img alt="Zero plugins" src="https://img.shields.io/badge/plugins-none%20required-informational">
   <img alt="Orphan notes: 0" src="https://img.shields.io/badge/orphan%20notes-0-success">
@@ -204,4 +204,6 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR. It covers the house
 
 The concept inventory, the two ladders, the question lists, the half-life table, the build briefs and the 28-week sequence come from *The Fundamentals Reset (Field Manual, Edition 2026)*, which I wrote with AI assistance. The scaffolding was generated from it and then edited by hand.
 
-Notes and prose are under [CC BY-SA 4.0](LICENSE), and scripts are MIT. Attribution is appreciated, and a link back is plenty.
+Breakpoint's teaching approach, an AI that examines instead of explaining, is inspired by [amosblomqvist/learn](https://github.com/amosblomqvist/learn). Breakpoint was written from scratch: `learn` has no license, so it shares ideas with it and no text or code.
+
+Notes and prose are under [CC BY-SA 4.0](LICENSE). Scripts and Breakpoint (`CLAUDE.md`, `.claude/` and the files shipped in `_tutor/`) are MIT. Attribution is appreciated, and a link back is plenty.
