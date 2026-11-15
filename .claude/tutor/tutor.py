@@ -429,7 +429,8 @@ def main(argv=None):
     ip.add_argument("--start", required=True)
     ip.add_argument("--language", default="English")
     ip.add_argument("--primary", default="")
-    sub.add_parser("due", help="ledger entries with next-due on or before today")
+    dp = sub.add_parser("due", help="ledger entries with next-due on or before today, oldest first")
+    dp.add_argument("--limit", type=int, help="at most this many (/revisit takes %d)" % REVISIT_CAP_ITEMS)
     pp = sub.add_parser("plan", help="what to do now, in order, for the time available")
     pp.add_argument("--minutes", type=int, default=60)
     pp.add_argument("--block", help="default: block in progress.md")
@@ -462,8 +463,9 @@ def main(argv=None):
         print("wrote", init_progress(k, args.block, args.start, args.language, args.primary))
     elif args.cmd == "due":
         due = k.due(args.today)
-        print(f"{len(due)} due on {args.today.isoformat()}")
-        for e in due:
+        print(f"{len(due)} due on {args.today.isoformat()}"
+              + (f", showing {min(args.limit, len(due))}" if args.limit else ""))
+        for e in due[:args.limit]:
             print(f"  {e['concept']}  box {e['box']}  due {e['next-due']}  last {e['last-result']}")
     elif args.cmd == "plan":
         block = args.block or (k.progress() or {}).get("block")
