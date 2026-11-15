@@ -19,6 +19,7 @@
   <a href="#why-this-exists">Why</a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="#whats-inside">What's inside</a> ·
+  <a href="#breakpoint-an-optional-examiner">Breakpoint</a> ·
   <a href="#contributing">Contributing</a> ·
   <a href="MOC.md">Map of contents</a>
 </p>
@@ -128,15 +129,55 @@ capstone/               the exam
 _templates/             note templates
 docs/                   the graph above · adr/ records this repo's own design decisions
 scripts/                graph.py redraws the graph · reset.py restores every note to stub
+CLAUDE.md, .claude/, _tutor/   Breakpoint, the optional examiner (below)
 ```
 
 Decisions about the repo itself, rather than your learning, are recorded in [`docs/adr/`](docs/adr/). The first is [ADR 0001: Breakpoint](docs/adr/0001-breakpoint.md), an optional Claude Code layer that examines you instead of writing for you.
 
 Start at the **[Map of contents](MOC.md)**. The notes themselves use `[[wikilinks]]`, so they read best in Obsidian. On GitHub, wikilinks and `> [!question]` callouts render as plain text; `README.md` and `MOC.md` use ordinary relative links so you can still find your way around from the web.
 
+## Breakpoint: an optional examiner
+
+Breakpoint is a [Claude Code](https://claude.com/claude-code) layer that turns the AI into your examiner rather than your author. It finds where your understanding breaks with closed-book questions, critiques what you wrote without rewriting it, schedules re-probes of what's fading, and coaches builds without writing the solution. Its history lives in `_tutor/`, on your machine, out of git.
+
+**The one rule: it never writes your sections.** In a concept note that's *Predict the failure*, *What it is*, *How it breaks* and *In my own words*. In a build note it's *Plan*, the failure you'll cause, *What actually happened* and *What I got wrong*. A hook blocks any edit that touches them. Besides that, Breakpoint only changes a note's `status` along fixed rules, and ticks a drill question, and only after you confirm.
+
+### Quick start
+
+```bash
+cd fundamentals-kasten && claude
+```
+
+The first time, Claude Code asks whether you trust the folder. Answer **yes**, or the hook that protects your sections won't run. Then type `/next`. The first run asks for your current block, start date and session language, and every run after that answers "what should I do now?" for the time you have.
+
+| Skill | Does |
+|---|---|
+| `/next` | Plans the session: due revisits, then the block's concepts, then its build |
+| `/probe <concept>` | Closed-book multiple choice that climbs until your understanding breaks |
+| `/critique <concept>` | Holes and wrong claims in what you wrote, as questions and sources, never a rewrite |
+| `/revisit` | Re-probes what's due, cold, in 15 minutes or less |
+| `/drill <theme>` | A theme's *Answer these* questions, one at a time, answered in your own words |
+| `/build-coach <build>` | Challenges your plan, reviews and hints while you build, then prompts the post-mortem |
+| `/visualize` | One verified diagram of the idea you're missing, in the session log |
+
+In Obsidian, [`_tutor/Dashboard.base`](_tutor/Dashboard.base) shows statuses, revisits due and recent sessions. It uses Bases, a core plugin.
+
+### Requirements
+
+- **Claude Code.** Breakpoint is `CLAUDE.md` plus `.claude/`. Its scripts use the Python standard library, like `scripts/`.
+- **Only for diagrams:** Node.js, mermaid-cli (fetched by `npx` on first use) and `rsvg-convert`. Claude Code asks permission the first time each render command runs. Setup: [`.claude/skills/visualize/SETUP.md`](.claude/skills/visualize/SETUP.md).
+
+### Everything works without it
+
+Breakpoint is optional. Without Claude Code the kasten is exactly what it was: plain markdown, Obsidian optional, nothing to install. To remove it, delete `CLAUDE.md`, `.claude/` and `_tutor/`. No note needs cleaning up. Why it's built this way: [ADR 0001: Breakpoint](docs/adr/0001-breakpoint.md).
+
 ## Reading the graph
 
-The graph is generated, not screenshotted. Re-run `python scripts/graph.py` to redraw both SVGs from your own links, or `python scripts/graph.py --stats` for the numbers alone. The layout is seeded, so a diff means the links really changed. Two things to watch:
+The graph is generated, not screenshotted. Re-run `python scripts/graph.py` to redraw both SVGs from your own links, or `python scripts/graph.py --stats` for the numbers alone. The layout is seeded, so a diff means the links really changed.
+
+**Wikilinks vs connections.** The notes contain about 1,500 `[[wikilinks]]`, but the graph draws 1,125 connections. A connection is a pair of notes linked at least once in either direction. The same link written twice in a note counts once, A → B and B → A are one connection, and links to non-notes (templates, the Breakpoint dashboard) aren't drawn. The two numbers count different things, so they don't contradict each other.
+
+Two things to watch:
 
 - **Orphans.** A note that nothing links to is one you filed and never used. A rising orphan count is the earliest sign you've gone back to collecting.
 - **Hubs.** In a fresh copy the biggest nodes are the indexes, because indexes are all there is. Once you've worked in a kasten, concepts start to outrank them.
