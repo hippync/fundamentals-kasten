@@ -564,5 +564,29 @@ class LogPath(Base):
             self.run_cli("log-path", "review")
 
 
+class Letters(Base):
+    def test_every_run_of_four_uses_each_letter_once(self):
+        letters = tutor.answer_letters("c-idempotency", TODAY, 16)
+        for i in range(0, 16, 4):
+            self.assertEqual(sorted(letters[i:i + 4]), list("ABCD"))
+
+    def test_same_session_same_letters_other_session_other_letters(self):
+        a = tutor.answer_letters("c-idempotency", TODAY, 12)
+        self.assertEqual(a, tutor.answer_letters("c-idempotency", TODAY, 12))
+        others = [tutor.answer_letters(key, TODAY + datetime.timedelta(days=d), 12)
+                  for key in ("c-backpressure", "revisit") for d in (0, 1)]
+        self.assertTrue(any(o != a for o in others))
+
+    def test_cli_numbers_the_questions(self):
+        _, out = self.run_cli("letters", "revisit", "--count", "5")
+        parts = out.split()
+        self.assertEqual([p.split(":")[0] for p in parts], ["Q1", "Q2", "Q3", "Q4", "Q5"])
+        self.assertEqual([p.split(":")[1] for p in parts], tutor.answer_letters("revisit", TODAY, 5))
+
+    def test_count_below_one_is_refused(self):
+        with self.assertRaises(SystemExit):
+            self.run_cli("letters", "revisit", "--count", "0")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

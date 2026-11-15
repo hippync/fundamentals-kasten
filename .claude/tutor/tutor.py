@@ -12,6 +12,7 @@ Formats: _tutor/README.md.
     python3 .claude/tutor/tutor.py due
     python3 .claude/tutor/tutor.py plan --minutes 45
     python3 .claude/tutor/tutor.py log-path probe
+    python3 .claude/tutor/tutor.py letters c-stack-vs-heap     # or: letters revisit
     python3 .claude/tutor/tutor.py concept "Stack vs heap"
     python3 .claude/tutor/tutor.py record c-stack-vs-heap partial
     python3 .claude/tutor/tutor.py sections "Stack vs heap"
@@ -25,7 +26,7 @@ Two commands write to notes, and only after the learner confirms: set-status
 tick (one checkbox in a theme's Answer these and in Questions — index). Every command takes --root (default: this repo) and --today (default: today).
 Standard library only, like scripts/.
 """
-import argparse, datetime, math, os, re, sys
+import argparse, datetime, hashlib, math, os, random, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(HERE), "hooks"))
@@ -509,6 +510,24 @@ def log_path(k, skill, today):
         n += 1
 
 
+def answer_letters(key, today, count):
+    """The correct letter for each question of a session, Q1 first.
+
+    Every run of four uses A-D once, shuffled by a seed from the day and the key
+    (a concept id, or the skill for /revisit), so a session is reproducible and
+    no letter is favoured. The model writing the questions doesn't choose: left
+    to itself it parks the answer on C or D."""
+    if count < 1:
+        raise SystemExit("--count must be at least 1.")
+    seed = hashlib.sha256(f"{today.isoformat()}:{key}".encode()).hexdigest()
+    rng, out = random.Random(seed), []
+    while len(out) < count:
+        four = list("ABCD")
+        rng.shuffle(four)
+        out += four
+    return out[:count]
+
+
 def init_progress(k, block, start, language, primary):
     path = os.path.join(k.tutor, "progress.md")
     if os.path.exists(path):
@@ -562,6 +581,9 @@ def main(argv=None):
     tp.add_argument("key", help="as printed by questions, e.g. S01.3")
     lp = sub.add_parser("log-path", help="the next free session-log path for a skill")
     lp.add_argument("skill")
+    xp = sub.add_parser("letters", help="the correct letter for each question of a session")
+    xp.add_argument("key", help="the concept id for /probe, 'revisit' for /revisit")
+    xp.add_argument("--count", type=int, default=16)
     args = ap.parse_args(argv)
     k = Kasten(args.root)
 
@@ -616,6 +638,9 @@ def main(argv=None):
         print(f"ticked in {', '.join(ticked)}: {text}" if ticked else f"already ticked: {text}")
     elif args.cmd == "log-path":
         print(log_path(k, args.skill, args.today))
+    elif args.cmd == "letters":
+        letters = answer_letters(args.key, args.today, args.count)
+        print("  ".join(f"Q{i}:{l}" for i, l in enumerate(letters, 1)))
     return 0
 
 
