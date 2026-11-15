@@ -237,6 +237,24 @@ class Due(Base):
         due = [e["concept"] for e in self.k.due(TODAY)]
         self.assertEqual(due, ["c-system-calls", "c-latency-numbers", "c-stack-vs-heap"])
 
+    def test_limit(self):
+        _, out = self.run_cli("due", "--limit", "2")
+        self.assertIn("3 due on 2026-11-14, showing 2", out)
+        self.assertNotIn("c-stack-vs-heap", out)
+
+    def test_a_revisit_session_updates_boxes_and_dates(self):
+        results = {"c-system-calls": "pass", "c-latency-numbers": "fail", "c-stack-vs-heap": "partial"}
+        for e in self.k.due(TODAY):
+            self.run_cli("record", e["concept"], results[e["concept"]])
+        after = {e["concept"]: (e["box"], e["next-due"]) for e in tutor.Kasten(self.root).ledger()}
+        self.assertEqual(after, {
+            "c-system-calls": (2, "2026-11-17"),       # box 1 pass -> 2, 3 days
+            "c-latency-numbers": (1, "2026-11-15"),    # box 2 fail -> 1, 1 day
+            "c-stack-vs-heap": (1, "2026-11-15"),      # box 1 partial stays, 1 day
+            "c-tokens": (3, "2026-11-20"),             # not due: untouched
+        })
+        self.assertEqual(tutor.Kasten(self.root).due(TODAY), [])
+
     def test_nothing_due_without_a_ledger(self):
         shutil.rmtree(os.path.join(self.root, "_tutor/ledger"))
         self.assertEqual(tutor.Kasten(self.root).due(TODAY), [])
