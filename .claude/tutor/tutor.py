@@ -16,10 +16,12 @@ Formats: _tutor/README.md.
     python3 .claude/tutor/tutor.py record c-stack-vs-heap partial
     python3 .claude/tutor/tutor.py sections "Stack vs heap"
     python3 .claude/tutor/tutor.py set-status c-stack-vs-heap explained
+    python3 .claude/tutor/tutor.py questions S01        # or: questions all
+    python3 .claude/tutor/tutor.py tick S01.3
 
-set-status is the one command that writes to a note: frontmatter status and
-tags only, along the transitions in _tutor/README.md. Run it after the learner
-confirms. Every command takes --root (default: this repo) and --today (default: today).
+Two commands write to notes, and only after the learner confirms: set-status
+(frontmatter status and tags, along the transitions in _tutor/README.md) and
+tick (one checkbox in a theme's Answer these and in Questions — index). Every command takes --root (default: this repo) and --today (default: today).
 Standard library only, like scripts/.
 """
 import argparse, datetime, math, os, re, sys
@@ -33,6 +35,7 @@ NOTE_DIRS = ("01-systems", "02-ai", "03-methodologies", "04-senior-multipliers",
 STATUS_ORDER = ("stub", "drafted", "explained", "tested")
 INTERVALS = {1: 1, 2: 3, 3: 7, 4: 14, 5: 30}          # box -> days until next due
 RESULTS = ("pass", "partial", "fail", "dont-know")
+QUESTIONS_INDEX = os.path.join("00-meta", "indexes", "Questions — index.md")
 SKILLS = ("next", "probe", "critique", "revisit", "drill", "build-coach")
 
 # Plan budget, in minutes.
@@ -305,6 +308,83 @@ def record(k, concept_id, result, today):
     return old, entry
 
 
+# ---------------------------------------------------------------- drill questions
+
+CHECKBOX = re.compile(r"^- \[( |x)\] (.+)$")
+
+
+def theme_id(k, ref):
+    """A theme note id from its code (S01, a5, P), id or title."""
+    for tid, note in sorted(k.of_type("theme").items()):
+        codes = [str(c).lower() for c in note["fm"].get("theme") or []]
+        if ref.lower() in codes:
+            return tid
+    tid = k.resolve(ref)
+    if tid and k.notes[tid]["fm"].get("type") == "theme":
+        return tid
+    raise SystemExit(f"No theme matches {ref!r}. Use its code (S01, A5, P, M), id or title.")
+
+
+def theme_questions(k, tid):
+    """[(key, checked, text)] from a theme's Answer these, keyed CODE.n."""
+    note = k.notes[tid]
+    code = str((note["fm"].get("theme") or [tid])[0])
+    out = []
+    for line in section(note["text"], "## Answer these").split("\n"):
+        m = CHECKBOX.match(line)
+        if m:
+            out.append((f"{code}.{len(out) + 1}", m.group(1) == "x", m.group(2)))
+    return out
+
+
+def questions(k, ref):
+    """One theme's questions, or every theme's in Questions — index order for 'all'."""
+    if ref != "all":
+        tid = theme_id(k, ref)
+        return [(key, done, text, tid) for key, done, text in theme_questions(k, tid)]
+    index = read(os.path.join(k.root, QUESTIONS_INDEX))
+    out = []
+    for title in re.findall(r"(?m)^## \[\[(.+?)\]\]$", index):
+        tid = k.resolve(title)
+        if tid:
+            out += [(key, done, text, tid) for key, done, text in theme_questions(k, tid)]
+    return out
+
+
+def tick_line(path, heading, text):
+    """Tick the box for this question under this heading; False if it isn't there."""
+    lines = read(path).split("\n")
+    inside = False
+    for i, line in enumerate(lines):
+        if line.startswith("## "):
+            inside = line == heading
+        elif inside and line == f"- [ ] {text}":
+            lines[i] = f"- [x] {text}"
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines))
+            return True
+    return False
+
+
+def tick(k, key):
+    code, _, n = key.rpartition(".")
+    tid = theme_id(k, code)
+    found = [q for q in theme_questions(k, tid) if q[0].lower() == key.lower()]
+    if not found or not n.isdigit():
+        raise SystemExit(f"No question {key!r}; run `questions {code or 'all'}` for the keys.")
+    _, done, text = found[0]
+    if done:
+        return text, []
+    title = k.notes[tid]["fm"].get("title")
+    ticked = []
+    if tick_line(k.notes[tid]["path"], "## Answer these", text):
+        ticked.append(k.rel(tid))
+    index = os.path.join(k.root, QUESTIONS_INDEX)
+    if os.path.exists(index) and tick_line(index, f"## [[{title}]]", text):
+        ticked.append(QUESTIONS_INDEX)
+    return text, ticked
+
+
 # ---------------------------------------------------------------- status
 
 def filled(k, ref):
@@ -446,6 +526,10 @@ def main(argv=None):
     sp.add_argument("status", choices=STATUS_ORDER)
     sp.add_argument("--reread", action="store_true", help="the step back after a failed /revisit")
     sp.add_argument("--check", action="store_true", help="say whether it's allowed; write nothing")
+    qp = sub.add_parser("questions", help="a theme's Answer these list, or 'all' from Questions — index")
+    qp.add_argument("theme", help="theme code (S01, A5, P, M), id, title, or all")
+    tp = sub.add_parser("tick", help="tick one question, in the theme note and Questions — index")
+    tp.add_argument("key", help="as printed by questions, e.g. S01.3")
     lp = sub.add_parser("log-path", help="the next free session-log path for a skill")
     lp.add_argument("skill")
     args = ap.parse_args(argv)
@@ -490,6 +574,14 @@ def main(argv=None):
         else:
             old, why = set_status(k, args.concept, args.status, args.reread)
             print(f"{args.concept}: {old} -> {args.status} ({why})")
+    elif args.cmd == "questions":
+        qs = questions(k, args.theme)
+        print(f"{len(qs)} questions, {sum(1 for q in qs if not q[1])} unticked")
+        for key, done, text, _ in qs:
+            print(f"  [{'x' if done else ' '}] {key}  {text}")
+    elif args.cmd == "tick":
+        text, ticked = tick(k, args.key)
+        print(f"ticked in {', '.join(ticked)}: {text}" if ticked else f"already ticked: {text}")
     elif args.cmd == "log-path":
         print(log_path(k, args.skill, args.today))
     return 0
