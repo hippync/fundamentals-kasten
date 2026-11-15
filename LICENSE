@@ -4,7 +4,8 @@ Fundamentals Kasten — license
 This repository contains two kinds of material, licensed differently.
 
 1. NOTES AND PROSE  (everything in *.md, including all note scaffolding,
-   the concept inventory, question lists, build briefs and the program)
+   the concept inventory, question lists, build briefs and the program,
+   except the Breakpoint files listed in section 2)
 ---------------------------------------------------------------------
 Copyright (c) 2026 Hansy
 
@@ -37,8 +38,16 @@ protection in some jurisdictions; where that is the case, this license
 functions as a statement of intent for those portions rather than an
 enforceable restriction.
 
-2. SCRIPTS  (everything in scripts/)
-------------------------------------
+2. SCRIPTS AND BREAKPOINT
+   (everything in scripts/; and Breakpoint, the optional Claude Code layer:
+   CLAUDE.md, everything in .claude/, and the files shipped in _tutor/,
+   which are its README, Dashboard.base and templates/)
+-----------------------------------------------------------------------------
+Breakpoint's skills, agents and teaching approach are inspired by
+amosblomqvist/learn (https://github.com/amosblomqvist/learn). That project
+has no license, so none of its text or code is used here; Breakpoint was
+written from scratch and shares only ideas with it.
+
 Copyright (c) 2026 Hansy
 
 MIT License

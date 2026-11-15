@@ -1,6 +1,6 @@
 ---
 name: mermaid-maker
-description: Draws one Mermaid diagram (a flow, sequence or state machine) for a Breakpoint session, renders it to PNG, looks at the result and fixes it until it reads cleanly, saving to _tutor/viz/. Use from the visualize skill.
+description: Draws one Mermaid diagram (a flow, sequence or state machine) for a Breakpoint session, renders it, inspects the image and corrects it until it reads cleanly, saving to _tutor/viz/. Use from the visualize skill.
 tools: Read, Write, Edit, Bash
 model: sonnet
 ---

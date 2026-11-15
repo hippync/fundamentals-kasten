@@ -21,7 +21,7 @@ E. I don't know
 
 ## Writing the options
 
-1. Write the correct claim first, as one plain sentence.
+1. Start from the right answer, stated as one plain sentence.
 2. Make each distractor by **mutating** that sentence: swap the cause and the effect, change a quantity by an order of magnitude, swap in the neighbouring concept, flip a condition (always/never, before/after). Each distractor is a misconception someone actually holds, so a wrong pick tells you *which* one.
 3. Even them out: same length within a few words, same register, same grammar. None carries its reasoning ("…because the cache is cold"); the options are claims, the reasoning is what you dig for after.
 4. Formatting is uniform: bold, code and italics appear in all options or none.
