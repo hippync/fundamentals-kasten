@@ -38,6 +38,16 @@ So the kasten is not a copy of the document. It's the document decomposed into t
 
 **No spaced-repetition cards.** [[Questions — index]] is formatted so you *can* generate them, but the manual's position is that recall isn't the bottleneck — prediction is. A flashcard asks "what is idempotency." The kasten asks "what breaks without it." Only the second one is the test.
 
+## Why Breakpoint doesn't break "no plugins"
+
+Breakpoint is an optional Claude Code layer that examines you against this kasten: closed-book probes, critiques of what you wrote, spaced revisits, build coaching. It sounds like exactly what the rule above forbids. It isn't, for three reasons:
+
+1. **Nothing depends on it.** It's `CLAUDE.md`, `.claude/` and `_tutor/`, beside the notes, not inside them. Delete those three and the kasten is unchanged: no note links to it, and no query needs it.
+2. **It adds no format.** Its state is plain markdown with YAML frontmatter, keyed by each note's `id`, in a folder git ignores. A note never carries Breakpoint's bookkeeping. The one thing it may change in a note is `status` (along fixed rules, after you confirm) and a drill checkbox you tick.
+3. **It enforces the design instead of eroding it.** The risk of pointing an AI at this kasten is that it fills the empty sections, which is the failure the whole design exists to prevent. Breakpoint's hook blocks edits to *Predict the failure*, *What it is*, *How it breaks* and *In my own words*. The tool sits in the half-life table's top row; the rule it guards sits in the bottom.
+
+The full decision, including the plugin and web-app options it beat: `docs/adr/0001-breakpoint.md` in the repo.
+
 ## Why it's shaped for retrieval too
 
 The kasten is also built to work as a corpus you can query. Three properties make that possible, and all three are enforced by [[Note contract]]:
